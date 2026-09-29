@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CleanWarehouse - Jadwal & Dashboard PIC</title>
+    <title>CleanWarehouse - Monitoring & Jadwal PIC</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -16,31 +16,68 @@
 </head>
 <body class="bg-gray-100 font-sans min-h-screen pb-12">
 
-    <!-- Topbar Navigasi -->
-    <nav class="bg-blue-800 text-white px-6 py-4 shadow-md flex justify-between items-center no-print">
+    <!-- Topbar Navigasi & Switcher User -->
+    <nav class="bg-blue-900 text-white px-4 md:px-6 py-3.5 shadow-md flex flex-wrap justify-between items-center gap-3 no-print">
         <div class="flex items-center space-x-3">
             <span class="text-2xl">🧹</span>
             <div>
-                <h1 class="text-xl font-bold tracking-wide leading-tight">CleanWarehouse</h1>
-                <p class="text-xs text-blue-200">System Monitoring & Kebersihan Gudang</p>
+                <h1 class="text-lg md:text-xl font-bold tracking-wide leading-tight">CleanWarehouse</h1>
+                <p class="text-xs text-blue-200">System Monitoring Kebersihan Gudang</p>
             </div>
         </div>
-        <div class="flex items-center space-x-3">
-            <button onclick="exportKeCSV()" class="hidden md:flex items-center space-x-1 bg-green-700 hover:bg-green-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+
+        <!-- Pilihan Peran Pengguna (Role Switcher) -->
+        <div class="flex items-center space-x-2 bg-blue-950/70 p-1.5 rounded-xl border border-blue-700/50">
+            <span class="text-xs text-blue-200 font-medium pl-2 hidden sm:inline">Pengguna:</span>
+            <select id="user-role-select" onchange="gantiPengguna(this.value)" class="bg-blue-800 text-white text-xs font-semibold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer border border-blue-600">
+                <optgroup label="Pengawas">
+                    <option value="Supervisor" selected>👑 Supervisor (Akses Penuh)</option>
+                </optgroup>
+                <optgroup label="Staf Kebersihan (PIC)">
+                    <option value="Agus Suwandani">👤 Agus Suwandani</option>
+                    <option value="Aldy Surya Pratama">👤 Aldy Surya Pratama</option>
+                    <option value="Andri Sembiring">👤 Andri Sembiring</option>
+                    <option value="Bobby Disani">👤 Bobby Disani</option>
+                    <option value="Brema Purba">👤 Brema Purba</option>
+                    <option value="Dermawan">👤 Dermawan</option>
+                    <option value="Frans Joy Temanta">👤 Frans Joy Temanta</option>
+                    <option value="Irfansyah">👤 Irfansyah</option>
+                    <option value="Jaka Nugraha">👤 Jaka Nugraha</option>
+                    <option value="Miko Hermansyag">👤 Miko Hermansyag</option>
+                    <option value="Muhammad Edo">👤 Muhammad Edo</option>
+                    <option value="Nanda Al Hafids">👤 Nanda Al Hafids</option>
+                    <option value="Nico Atmaja">👤 Nico Atmaja</option>
+                    <option value="Riski Dermawan">👤 Riski Dermawan</option>
+                    <option value="Satrya Karyanta">👤 Satrya Karyanta</option>
+                    <option value="Sudybyo Widodo">👤 Sudybyo Widodo</option>
+                    <option value="Wahyu Agustian">👤 Wahyu Agustian</option>
+                    <option value="Yogi Karnisa">👤 Yogi Karnisa</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <!-- Tombol Aksi Tambahan (Hanya Supervisor) -->
+        <div class="hidden lg:flex items-center space-x-2 role-supervisor">
+            <button onclick="exportKeCSV()" class="flex items-center space-x-1 bg-green-700 hover:bg-green-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow-sm">
                 <span>📊</span>
                 <span>Ekspor CSV</span>
             </button>
-            <button onclick="window.print()" class="hidden md:flex items-center space-x-1 bg-blue-700 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+            <button onclick="window.print()" class="flex items-center space-x-1 bg-blue-700 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow-sm">
                 <span>🖨️</span>
                 <span>Cetak Laporan</span>
             </button>
-            <div class="text-xs md:text-sm bg-blue-900 px-3 py-1.5 rounded-full border border-blue-700">
-                👤 Staf: <span class="font-bold text-white">Budi Santoso</span>
-            </div>
         </div>
     </nav>
 
-    <!-- Header saat Dicetak -->
+    <!-- Banner Info Akun Aktif -->
+    <div id="banner-user" class="bg-blue-50 border-b border-blue-100 px-4 py-2.5 text-xs text-blue-800 flex justify-between items-center no-print">
+        <div class="max-w-6xl mx-auto w-full flex justify-between items-center">
+            <span id="text-user-active">Mode: <strong>Supervisor</strong> (Melihat seluruh tugas)</span>
+            <span id="badge-role-type" class="bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">Akses Penuh</span>
+        </div>
+    </div>
+
+    <!-- Header Cetak -->
     <div class="hidden print:block p-6 border-b text-center">
         <h1 class="text-2xl font-bold">Laporan Ringkasan & Jadwal Kebersihan Gudang</h1>
         <p class="text-sm text-gray-600">CleanWarehouse System — Tanggal Cetak: <span id="print-date"></span></p>
@@ -50,7 +87,7 @@
     <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
         
         <!-- Stat Ringkasan -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
                 <div>
                     <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Tugas Hari Ini</span>
@@ -96,13 +133,12 @@
             </div>
 
             <div id="container-pic" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Data PIC diisi otomatis lewat JS -->
+                <!-- Data PIC di-render otomatis lewat JS -->
             </div>
         </div>
 
         <!-- Tabel Konten Utama -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-            <!-- Table Action Header -->
             <div class="p-4 md:p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 class="text-lg font-bold text-gray-800">Jadwal Kebersihan Gudang</h2>
@@ -110,23 +146,21 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 no-print">
-                    <!-- Input Cari -->
                     <input type="text" id="input-search" oninput="filterDanCari()" placeholder="Cari Zona atau PIC..." class="text-xs bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     
-                    <!-- Reset Data -->
-                    <button onclick="resetDataAwal()" title="Reset ke data awal" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-semibold transition">
+                    <!-- Tombol Khusus Supervisor -->
+                    <button onclick="resetDataAwal()" title="Reset data ke default" class="role-supervisor bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-semibold transition">
                         🔄 Reset Data
                     </button>
 
-                    <!-- Tombol Tambah -->
-                    <button onclick="bukaModalTambah()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                    <button onclick="bukaModalTambah()" class="role-supervisor bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
                         <span>+</span>
                         <span>Tambah Jadwal</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Tab Filter -->
+            <!-- Filter Status -->
             <div class="flex border-b border-gray-100 bg-gray-50/50 px-4 pt-2 gap-2 text-xs font-semibold no-print">
                 <button onclick="setFilter('semua')" id="tab-semua" class="tab-btn px-4 py-2 border-b-2 border-blue-600 text-blue-600">Semua</button>
                 <button onclick="setFilter('Belum')" id="tab-Belum" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Belum</button>
@@ -168,8 +202,27 @@
                     <input type="text" id="add-zona" required placeholder="Contoh: Zona E - Area Sorting" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Petugas (PIC) *</label>
-                    <input type="text" id="add-pic" required placeholder="Contoh: Ahmad & Ridwan" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Petugas (PIC) *</label>
+                    <select id="add-pic" required class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="Agus Suwandani">Agus Suwandani</option>
+                        <option value="Aldy Surya Pratama">Aldy Surya Pratama</option>
+                        <option value="Andri Sembiring">Andri Sembiring</option>
+                        <option value="Bobby Disani">Bobby Disani</option>
+                        <option value="Brema Purba">Brema Purba</option>
+                        <option value="Dermawan">Dermawan</option>
+                        <option value="Frans Joy Temanta">Frans Joy Temanta</option>
+                        <option value="Irfansyah">Irfansyah</option>
+                        <option value="Jaka Nugraha">Jaka Nugraha</option>
+                        <option value="Miko Hermansyag">Miko Hermansyag</option>
+                        <option value="Muhammad Edo">Muhammad Edo</option>
+                        <option value="Nanda Al Hafids">Nanda Al Hafids</option>
+                        <option value="Nico Atmaja">Nico Atmaja</option>
+                        <option value="Riski Dermawan">Riski Dermawan</option>
+                        <option value="Satrya Karyanta">Satrya Karyanta</option>
+                        <option value="Sudybyo Widodo">Sudybyo Widodo</option>
+                        <option value="Wahyu Agustian">Wahyu Agustian</option>
+                        <option value="Yogi Karnisa">Yogi Karnisa</option>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -230,27 +283,25 @@
 
     <!-- SCRIPT LOGIKA HTML/JS -->
     <script>
-        // Data Default Awal
+        // Data Default Awal dengan beberapa nama dari daftar PIC baru
         const dataDefault = [
-            { id: 1, waktu: '08:00 - 09:00', shift: 'Shift 1', zona: 'Zona A - Loading Dock', pic: 'Ahmad & Ridwan', foto: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400', status: 'Selesai' },
-            { id: 2, waktu: '09:30 - 10:30', shift: 'Shift 1', zona: 'Zona B - Lorong Rak 1-5', pic: 'Budi Santoso', foto: null, status: 'Proses' },
-            { id: 3, waktu: '11:00 - 12:00', shift: 'Shift 1', zona: 'Zona C - Area Packing', pic: 'Ahmad & Ridwan', foto: null, status: 'Belum' },
-            { id: 4, waktu: '13:00 - 14:00', shift: 'Shift 2', zona: 'Zona D - Area Office & Toilet', pic: 'Siti Aminah', foto: null, status: 'Belum' }
+            { id: 1, waktu: '08:00 - 09:00', shift: 'Shift 1', zona: 'Zona A - Loading Dock', pic: 'Aldy Surya Pratama', foto: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400', status: 'Selesai' },
+            { id: 2, waktu: '09:30 - 10:30', shift: 'Shift 1', zona: 'Zona B - Lorong Rak 1-5', pic: 'Bobby Disani', foto: null, status: 'Proses' },
+            { id: 3, waktu: '11:00 - 12:00', shift: 'Shift 1', zona: 'Zona C - Area Packing', pic: 'Nanda Al Hafids', foto: null, status: 'Belum' },
+            { id: 4, waktu: '13:00 - 14:00', shift: 'Shift 2', zona: 'Zona D - Area Office & Toilet', pic: 'Irfansyah', foto: null, status: 'Belum' }
         ];
 
-        // Ambil data dari LocalStorage atau gunakan Data Default
         let dataJadwal = JSON.parse(localStorage.getItem('cleanwarehouse_data')) || dataDefault;
+        let userAktif = localStorage.getItem('cleanwarehouse_user') || 'Supervisor';
 
         let idAktif = null;
         let urlFotoSementara = '';
         let filterStatus = 'semua';
 
-        // Simpan Data ke LocalStorage
         function simpanKeStorage() {
             localStorage.setItem('cleanwarehouse_data', JSON.stringify(dataJadwal));
         }
 
-        // Reset Data ke Kondisi Default
         function resetDataAwal() {
             if (confirm('Apakah Anda yakin ingin mengembalikan data ke jadwal default?')) {
                 dataJadwal = [...dataDefault];
@@ -260,8 +311,9 @@
             }
         }
 
-        // Inisialisasi Tampilan
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('user-role-select').value = userAktif;
+            updateTampilanPengguna();
             renderTabel();
             renderStatistik();
             document.getElementById('print-date').innerText = new Date().toLocaleDateString('id-ID', {
@@ -269,12 +321,42 @@
             });
         });
 
-        // Render Data ke Tabel
+        function gantiPengguna(namaUser) {
+            userAktif = namaUser;
+            localStorage.setItem('cleanwarehouse_user', userAktif);
+            updateTampilanPengguna();
+            renderTabel();
+            renderStatistik();
+        }
+
+        function updateTampilanPengguna() {
+            const isSupervisor = userAktif === 'Supervisor';
+            
+            document.querySelectorAll('.role-supervisor').forEach(el => {
+                if (isSupervisor) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+
+            const bannerText = document.getElementById('text-user-active');
+            const badgeRole = document.getElementById('badge-role-type');
+
+            if (isSupervisor) {
+                bannerText.innerHTML = `Mode Pengguna: <strong>Supervisor</strong> (Melihat dan mengelola seluruh tugas staf)`;
+                badgeRole.innerText = 'Akses Penuh';
+                badgeRole.className = 'bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider';
+            } else {
+                bannerText.innerHTML = `Mode Staf: <strong>${userAktif}</strong> (Hanya mengelola pengerjaan tugas Anda)`;
+                badgeRole.innerText = 'Mode Staf / PIC';
+                badgeRole.className = 'bg-green-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider';
+            }
+        }
+
         function renderTabel() {
             const tbody = document.getElementById('tabel-jadwal');
             tbody.innerHTML = '';
 
             const keyword = document.getElementById('input-search').value.toLowerCase();
+            const isSupervisor = userAktif === 'Supervisor';
 
             const dataFiltered = dataJadwal.filter(item => {
                 const matchStatus = filterStatus === 'semua' || item.status === filterStatus;
@@ -291,29 +373,38 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-gray-50 transition border-b border-gray-100';
 
-                // Status Badge CSS
+                if (!isSupervisor && item.pic === userAktif) {
+                    tr.classList.add('bg-blue-50/40');
+                }
+
                 let badgeStatus = '';
                 if (item.status === 'Selesai') badgeStatus = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>`;
                 else if (item.status === 'Proses') badgeStatus = `<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold">Proses</span>`;
                 else badgeStatus = `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Belum</span>`;
 
-                // Tombol Bukti Foto
                 let fotoElement = `<span class="text-xs text-gray-400 italic">Belum ada</span>`;
                 if (item.foto) {
                     fotoElement = `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 rounded border border-blue-200 flex items-center gap-1 transition">📷 Lihat Foto</button>`;
                 }
 
-                // Tombol Aksi & Hapus
                 let aksiElement = '';
-                if (item.status === 'Belum') {
-                    aksiElement = `<button onclick="ubahStatus(${item.id}, 'Proses')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Kerjakan</button>`;
-                } else if (item.status === 'Proses') {
-                    aksiElement = `<button onclick="bukaModalUpload(${item.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Tandai Selesai</button>`;
+                const bisaEdit = isSupervisor || item.pic === userAktif;
+
+                if (bisaEdit) {
+                    if (item.status === 'Belum') {
+                        aksiElement = `<button onclick="ubahStatus(${item.id}, 'Proses')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Kerjakan</button>`;
+                    } else if (item.status === 'Proses') {
+                        aksiElement = `<button onclick="bukaModalUpload(${item.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Tandai Selesai</button>`;
+                    } else {
+                        aksiElement = `<span class="text-gray-400 text-xs font-semibold">Tuntas ✅</span>`;
+                    }
                 } else {
-                    aksiElement = `<span class="text-gray-400 text-xs font-semibold">Tuntas ✅</span>`;
+                    aksiElement = `<span class="text-gray-400 text-xs italic">Tugas ${item.pic}</span>`;
                 }
 
-                const hapusBtn = `<button onclick="hapusJadwal(${item.id})" title="Hapus" class="text-red-400 hover:text-red-600 text-xs ml-2">🗑️</button>`;
+                const hapusBtn = isSupervisor 
+                    ? `<button onclick="hapusJadwal(${item.id})" title="Hapus" class="text-red-400 hover:text-red-600 text-xs ml-2">🗑️</button>`
+                    : '';
 
                 tr.innerHTML = `
                     <td class="py-4 px-4 md:px-6 font-semibold text-gray-800">
@@ -321,7 +412,10 @@
                         <div class="text-xs font-normal text-gray-400">${item.shift}</div>
                     </td>
                     <td class="py-4 px-4 md:px-6 font-medium">${item.zona}</td>
-                    <td class="py-4 px-4 md:px-6">${item.pic}</td>
+                    <td class="py-4 px-4 md:px-6">
+                        <span class="font-semibold">${item.pic}</span>
+                        ${item.pic === userAktif ? '<span class="ml-1 text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">Anda</span>' : ''}
+                    </td>
                     <td class="py-4 px-4 md:px-6">${fotoElement}</td>
                     <td class="py-4 px-4 md:px-6">${badgeStatus}</td>
                     <td class="py-4 px-4 md:px-6 no-print flex items-center gap-1">
@@ -333,7 +427,6 @@
             });
         }
 
-        // Render Ringkasan & Leaderboard PIC
         function renderStatistik() {
             const total = dataJadwal.length;
             const selesai = dataJadwal.filter(i => i.status === 'Selesai').length;
@@ -343,7 +436,6 @@
             document.getElementById('stat-selesai').innerText = selesai;
             document.getElementById('stat-pending').innerText = pending;
 
-            // Hitung Performa PIC
             const picStats = {};
             dataJadwal.forEach(item => {
                 if (!picStats[item.pic]) picStats[item.pic] = { total: 0, selesai: 0 };
@@ -361,14 +453,19 @@
                 return { name, total: totalPic, selesai: selesaiPic, persen };
             }).sort((a, b) => b.persen - a.persen);
 
+            if (listPic.length === 0) {
+                containerPic.innerHTML = `<p class="text-xs text-gray-400 col-span-3">Belum ada tugas yang ditetapkan ke staf.</p>`;
+                return;
+            }
+
             const badges = ['🥇', '🥈', '🥉'];
             listPic.forEach((pic, index) => {
                 const rankBadge = badges[index] || '⭐';
                 const card = document.createElement('div');
-                card.className = 'p-4 rounded-xl border border-gray-100 bg-gray-50/60 relative space-y-2';
+                card.className = `p-4 rounded-xl border ${pic.name === userAktif ? 'border-blue-400 bg-blue-50/50' : 'border-gray-100 bg-gray-50/60'} relative space-y-2`;
                 card.innerHTML = `
                     <span class="absolute top-3 right-3 text-lg">${rankBadge}</span>
-                    <p class="font-bold text-gray-800 text-xs">${pic.name}</p>
+                    <p class="font-bold text-gray-800 text-xs">${pic.name} ${pic.name === userAktif ? '(Anda)' : ''}</p>
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs font-semibold">
                             <span class="text-gray-500">Tugas Selesai</span>
@@ -383,7 +480,6 @@
             });
         }
 
-        // Filter & Cari
         function setFilter(status) {
             filterStatus = status;
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -399,7 +495,6 @@
             renderTabel();
         }
 
-        // Modal Tambah
         function bukaModalTambah() {
             document.getElementById('modal-tambah').classList.remove('hidden');
         }
@@ -433,7 +528,6 @@
             renderStatistik();
         }
 
-        // Ubah Status & Hapus
         function ubahStatus(id, newStatus) {
             const item = dataJadwal.find(i => i.id === id);
             if (item) {
@@ -453,7 +547,6 @@
             }
         }
 
-        // Upload Foto
         function bukaModalUpload(id) {
             idAktif = id;
             document.getElementById('input-foto').value = '';
@@ -470,7 +563,7 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    urlFotoSementara = e.target.result; // Menggunakan Data URL (base64) untuk simpan ke LocalStorage
+                    urlFotoSementara = e.target.result;
                     document.getElementById('img-preview').src = urlFotoSementara;
                     document.getElementById('container-preview').classList.remove('hidden');
                 };
@@ -495,7 +588,6 @@
             tutupModalUpload();
         }
 
-        // Lihat Foto Modal
         function lihatFoto(url) {
             document.getElementById('img-full').src = url;
             document.getElementById('modal-lihat').classList.remove('hidden');
@@ -505,7 +597,6 @@
             document.getElementById('modal-lihat').classList.add('hidden');
         }
 
-        // Ekspor Data ke Format CSV
         function exportKeCSV() {
             let csvContent = "data:text/csv;charset=utf-8,ID,Waktu,Shift,Zona,PIC,Status\n";
             dataJadwal.forEach(row => {
