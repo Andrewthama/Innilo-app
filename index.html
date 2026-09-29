@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CleanWarehouse - Jadwal & Dashboard PIC</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .shadow-sm, .shadow-md, .shadow-xl { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen pb-12">
+
+    <!-- Topbar Navigasi -->
+    <nav class="bg-blue-800 text-white px-6 py-4 shadow-md flex justify-between items-center no-print">
+        <div class="flex items-center space-x-3">
+            <span class="text-2xl">🧹</span>
+            <div>
+                <h1 class="text-xl font-bold tracking-wide leading-tight">CleanWarehouse</h1>
+                <p class="text-xs text-blue-200">System Monitoring & Kebersihan Gudang</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="exportKeCSV()" class="hidden md:flex items-center space-x-1 bg-green-700 hover:bg-green-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                <span>📊</span>
+                <span>Ekspor CSV</span>
+            </button>
+            <button onclick="window.print()" class="hidden md:flex items-center space-x-1 bg-blue-700 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                <span>🖨️</span>
+                <span>Cetak Laporan</span>
+            </button>
+            <div class="text-xs md:text-sm bg-blue-900 px-3 py-1.5 rounded-full border border-blue-700">
+                👤 Staf: <span class="font-bold text-white">Budi Santoso</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header saat Dicetak -->
+    <div class="hidden print:block p-6 border-b text-center">
+        <h1 class="text-2xl font-bold">Laporan Ringkasan & Jadwal Kebersihan Gudang</h1>
+        <p class="text-sm text-gray-600">CleanWarehouse System — Tanggal Cetak: <span id="print-date"></span></p>
+    </div>
+
+    <!-- Container Utama -->
+    <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        
+        <!-- Stat Ringkasan -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Tugas Hari Ini</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-total" class="text-3xl font-extrabold text-gray-800">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Zona</span>
+                    </div>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-full text-blue-600 text-xl">📋</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Selesai</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-selesai" class="text-3xl font-extrabold text-green-600">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Zona</span>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-3 rounded-full text-green-600 text-xl">✅</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Belum / Dalam Proses</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-pending" class="text-3xl font-extrabold text-red-600">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Zona</span>
+                    </div>
+                </div>
+                <div class="bg-red-50 p-3 rounded-full text-red-600 text-xl">⏳</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard & Capaian PIC -->
+        <div class="bg-white rounded-xl shadow-sm p-5 md:p-6 border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-base md:text-lg font-bold text-gray-800">🏆 Leaderboard Performa Petugas (PIC)</h2>
+                    <p class="text-xs text-gray-500">Peringkat berdasarkan persentase penyelesaian zona tugas</p>
+                </div>
+                <span class="text-xs bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full">Real-time</span>
+            </div>
+
+            <div id="container-pic" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Data PIC diisi otomatis lewat JS -->
+            </div>
+        </div>
+
+        <!-- Tabel Konten Utama -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+            <!-- Table Action Header -->
+            <div class="p-4 md:p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Jadwal Kebersihan Gudang</h2>
+                    <p class="text-xs text-gray-500">Kelola pengerjaan dan verifikasi bukti foto</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 no-print">
+                    <!-- Input Cari -->
+                    <input type="text" id="input-search" oninput="filterDanCari()" placeholder="Cari Zona atau PIC..." class="text-xs bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    
+                    <!-- Reset Data -->
+                    <button onclick="resetDataAwal()" title="Reset ke data awal" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-semibold transition">
+                        🔄 Reset Data
+                    </button>
+
+                    <!-- Tombol Tambah -->
+                    <button onclick="bukaModalTambah()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                        <span>+</span>
+                        <span>Tambah Jadwal</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Filter -->
+            <div class="flex border-b border-gray-100 bg-gray-50/50 px-4 pt-2 gap-2 text-xs font-semibold no-print">
+                <button onclick="setFilter('semua')" id="tab-semua" class="tab-btn px-4 py-2 border-b-2 border-blue-600 text-blue-600">Semua</button>
+                <button onclick="setFilter('Belum')" id="tab-Belum" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Belum</button>
+                <button onclick="setFilter('Proses')" id="tab-Proses" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Proses</button>
+                <button onclick="setFilter('Selesai')" id="tab-Selesai" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Selesai</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700 text-xs uppercase font-semibold tracking-wider">
+                            <th class="py-3 px-4 md:px-6">Waktu & Shift</th>
+                            <th class="py-3 px-4 md:px-6">Area / Zona</th>
+                            <th class="py-3 px-4 md:px-6">Petugas (PIC)</th>
+                            <th class="py-3 px-4 md:px-6">Foto Bukti</th>
+                            <th class="py-3 px-4 md:px-6">Status</th>
+                            <th class="py-3 px-4 md:px-6 no-print">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-jadwal" class="divide-y divide-gray-100 text-sm font-medium text-gray-700">
+                        <!-- Baris tabel di-render melalui JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL POPUP: TAMBAH JADWAL BARU -->
+    <div id="modal-tambah" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-base font-bold text-gray-800">Tambah Jadwal Kebersihan</h3>
+                <button onclick="tutupModalTambah()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            
+            <form id="form-tambah" onsubmit="simpanJadwalBaru(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Area / Zona *</label>
+                    <input type="text" id="add-zona" required placeholder="Contoh: Zona E - Area Sorting" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Petugas (PIC) *</label>
+                    <input type="text" id="add-pic" required placeholder="Contoh: Ahmad & Ridwan" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Waktu *</label>
+                        <input type="text" id="add-waktu" required placeholder="08:00 - 09:00" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Shift</label>
+                        <select id="add-shift" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Shift 1">Shift 1</option>
+                            <option value="Shift 2">Shift 2</option>
+                            <option value="Shift 3">Shift 3</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="tutupModalTambah()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 shadow-sm">Simpan Jadwal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: UPLOAD FOTO BUKTI -->
+    <div id="modal-upload" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <h3 class="text-base font-bold text-gray-800 border-b pb-2">Upload Bukti Kebersihan</h3>
+            <p class="text-xs text-gray-500">Unggah foto kondisi area setelah dibersihkan sebagai bukti pengerjaan.</p>
+            
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih / Ambil Foto:</label>
+                <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="previewFoto(event)" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+            </div>
+
+            <!-- Preview Gambar -->
+            <div id="container-preview" class="hidden border rounded-lg p-2 bg-gray-50 text-center">
+                <img id="img-preview" src="" class="max-h-48 mx-auto rounded-lg shadow-sm">
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button onclick="tutupModalUpload()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200">Batal</button>
+                <button onclick="simpanFotoSelesai()" class="px-4 py-2 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 shadow-sm">Kirim & Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: LIHAT FOTO FULL -->
+    <div id="modal-lihat" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50 no-print" onclick="tutupModalLihat()">
+        <div class="bg-white rounded-xl max-w-lg w-full p-4 shadow-xl space-y-3 relative" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-xs font-bold text-gray-800">Foto Bukti Kebersihan</h3>
+                <button onclick="tutupModalLihat()" class="text-gray-500 font-bold hover:text-black">✕</button>
+            </div>
+            <img id="img-full" src="" class="w-full h-auto rounded-lg max-h-96 object-cover">
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIKA HTML/JS -->
+    <script>
+        // Data Default Awal
+        const dataDefault = [
+            { id: 1, waktu: '08:00 - 09:00', shift: 'Shift 1', zona: 'Zona A - Loading Dock', pic: 'Ahmad & Ridwan', foto: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400', status: 'Selesai' },
+            { id: 2, waktu: '09:30 - 10:30', shift: 'Shift 1', zona: 'Zona B - Lorong Rak 1-5', pic: 'Budi Santoso', foto: null, status: 'Proses' },
+            { id: 3, waktu: '11:00 - 12:00', shift: 'Shift 1', zona: 'Zona C - Area Packing', pic: 'Ahmad & Ridwan', foto: null, status: 'Belum' },
+            { id: 4, waktu: '13:00 - 14:00', shift: 'Shift 2', zona: 'Zona D - Area Office & Toilet', pic: 'Siti Aminah', foto: null, status: 'Belum' }
+        ];
+
+        // Ambil data dari LocalStorage atau gunakan Data Default
+        let dataJadwal = JSON.parse(localStorage.getItem('cleanwarehouse_data')) || dataDefault;
+
+        let idAktif = null;
+        let urlFotoSementara = '';
+        let filterStatus = 'semua';
+
+        // Simpan Data ke LocalStorage
+        function simpanKeStorage() {
+            localStorage.setItem('cleanwarehouse_data', JSON.stringify(dataJadwal));
+        }
+
+        // Reset Data ke Kondisi Default
+        function resetDataAwal() {
+            if (confirm('Apakah Anda yakin ingin mengembalikan data ke jadwal default?')) {
+                dataJadwal = [...dataDefault];
+                simpanKeStorage();
+                renderTabel();
+                renderStatistik();
+            }
+        }
+
+        // Inisialisasi Tampilan
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTabel();
+            renderStatistik();
+            document.getElementById('print-date').innerText = new Date().toLocaleDateString('id-ID', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+        });
+
+        // Render Data ke Tabel
+        function renderTabel() {
+            const tbody = document.getElementById('tabel-jadwal');
+            tbody.innerHTML = '';
+
+            const keyword = document.getElementById('input-search').value.toLowerCase();
+
+            const dataFiltered = dataJadwal.filter(item => {
+                const matchStatus = filterStatus === 'semua' || item.status === filterStatus;
+                const matchSearch = item.zona.toLowerCase().includes(keyword) || item.pic.toLowerCase().includes(keyword);
+                return matchStatus && matchSearch;
+            });
+
+            if (dataFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">Tidak ada data jadwal yang cocok.</td></tr>`;
+                return;
+            }
+
+            dataFiltered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition border-b border-gray-100';
+
+                // Status Badge CSS
+                let badgeStatus = '';
+                if (item.status === 'Selesai') badgeStatus = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>`;
+                else if (item.status === 'Proses') badgeStatus = `<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold">Proses</span>`;
+                else badgeStatus = `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Belum</span>`;
+
+                // Tombol Bukti Foto
+                let fotoElement = `<span class="text-xs text-gray-400 italic">Belum ada</span>`;
+                if (item.foto) {
+                    fotoElement = `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 rounded border border-blue-200 flex items-center gap-1 transition">📷 Lihat Foto</button>`;
+                }
+
+                // Tombol Aksi & Hapus
+                let aksiElement = '';
+                if (item.status === 'Belum') {
+                    aksiElement = `<button onclick="ubahStatus(${item.id}, 'Proses')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Kerjakan</button>`;
+                } else if (item.status === 'Proses') {
+                    aksiElement = `<button onclick="bukaModalUpload(${item.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Tandai Selesai</button>`;
+                } else {
+                    aksiElement = `<span class="text-gray-400 text-xs font-semibold">Tuntas ✅</span>`;
+                }
+
+                const hapusBtn = `<button onclick="hapusJadwal(${item.id})" title="Hapus" class="text-red-400 hover:text-red-600 text-xs ml-2">🗑️</button>`;
+
+                tr.innerHTML = `
+                    <td class="py-4 px-4 md:px-6 font-semibold text-gray-800">
+                        <div>${item.waktu}</div>
+                        <div class="text-xs font-normal text-gray-400">${item.shift}</div>
+                    </td>
+                    <td class="py-4 px-4 md:px-6 font-medium">${item.zona}</td>
+                    <td class="py-4 px-4 md:px-6">${item.pic}</td>
+                    <td class="py-4 px-4 md:px-6">${fotoElement}</td>
+                    <td class="py-4 px-4 md:px-6">${badgeStatus}</td>
+                    <td class="py-4 px-4 md:px-6 no-print flex items-center gap-1">
+                        ${aksiElement}
+                        ${hapusBtn}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Ringkasan & Leaderboard PIC
+        function renderStatistik() {
+            const total = dataJadwal.length;
+            const selesai = dataJadwal.filter(i => i.status === 'Selesai').length;
+            const pending = total - selesai;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-selesai').innerText = selesai;
+            document.getElementById('stat-pending').innerText = pending;
+
+            // Hitung Performa PIC
+            const picStats = {};
+            dataJadwal.forEach(item => {
+                if (!picStats[item.pic]) picStats[item.pic] = { total: 0, selesai: 0 };
+                picStats[item.pic].total++;
+                if (item.status === 'Selesai') picStats[item.pic].selesai++;
+            });
+
+            const containerPic = document.getElementById('container-pic');
+            containerPic.innerHTML = '';
+
+            const listPic = Object.keys(picStats).map(name => {
+                const totalPic = picStats[name].total;
+                const selesaiPic = picStats[name].selesai;
+                const persen = totalPic > 0 ? Math.round((selesaiPic / totalPic) * 100) : 0;
+                return { name, total: totalPic, selesai: selesaiPic, persen };
+            }).sort((a, b) => b.persen - a.persen);
+
+            const badges = ['🥇', '🥈', '🥉'];
+            listPic.forEach((pic, index) => {
+                const rankBadge = badges[index] || '⭐';
+                const card = document.createElement('div');
+                card.className = 'p-4 rounded-xl border border-gray-100 bg-gray-50/60 relative space-y-2';
+                card.innerHTML = `
+                    <span class="absolute top-3 right-3 text-lg">${rankBadge}</span>
+                    <p class="font-bold text-gray-800 text-xs">${pic.name}</p>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-gray-500">Tugas Selesai</span>
+                            <span class="text-blue-600">${pic.selesai} / ${pic.total} Zona (${pic.persen}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-blue-600 h-full rounded-full transition-all duration-300" style="width: ${pic.persen}%;"></div>
+                        </div>
+                    </div>
+                `;
+                containerPic.appendChild(card);
+            });
+        }
+
+        // Filter & Cari
+        function setFilter(status) {
+            filterStatus = status;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            document.getElementById(`tab-${status}`).classList.add('border-blue-600', 'text-blue-600');
+            document.getElementById(`tab-${status}`).classList.remove('border-transparent', 'text-gray-500');
+            renderTabel();
+        }
+
+        function filterDanCari() {
+            renderTabel();
+        }
+
+        // Modal Tambah
+        function bukaModalTambah() {
+            document.getElementById('modal-tambah').classList.remove('hidden');
+        }
+
+        function tutupModalTambah() {
+            document.getElementById('modal-tambah').classList.add('hidden');
+            document.getElementById('form-tambah').reset();
+        }
+
+        function simpanJadwalBaru(event) {
+            event.preventDefault();
+            const zona = document.getElementById('add-zona').value;
+            const pic = document.getElementById('add-pic').value;
+            const waktu = document.getElementById('add-waktu').value;
+            const shift = document.getElementById('add-shift').value;
+
+            const newItem = {
+                id: Date.now(),
+                waktu,
+                shift,
+                zona,
+                pic,
+                foto: null,
+                status: 'Belum'
+            };
+
+            dataJadwal.push(newItem);
+            simpanKeStorage();
+            tutupModalTambah();
+            renderTabel();
+            renderStatistik();
+        }
+
+        // Ubah Status & Hapus
+        function ubahStatus(id, newStatus) {
+            const item = dataJadwal.find(i => i.id === id);
+            if (item) {
+                item.status = newStatus;
+                simpanKeStorage();
+                renderTabel();
+                renderStatistik();
+            }
+        }
+
+        function hapusJadwal(id) {
+            if (confirm('Hapus jadwal ini?')) {
+                dataJadwal = dataJadwal.filter(i => i.id !== id);
+                simpanKeStorage();
+                renderTabel();
+                renderStatistik();
+            }
+        }
+
+        // Upload Foto
+        function bukaModalUpload(id) {
+            idAktif = id;
+            document.getElementById('input-foto').value = '';
+            document.getElementById('container-preview').classList.add('hidden');
+            document.getElementById('modal-upload').classList.remove('hidden');
+        }
+
+        function tutupModalUpload() {
+            document.getElementById('modal-upload').classList.add('hidden');
+        }
+
+        function previewFoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    urlFotoSementara = e.target.result; // Menggunakan Data URL (base64) untuk simpan ke LocalStorage
+                    document.getElementById('img-preview').src = urlFotoSementara;
+                    document.getElementById('container-preview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function simpanFotoSelesai() {
+            if (!document.getElementById('input-foto').files[0]) {
+                alert('Silakan pilih atau unggah foto bukti terlebih dahulu!');
+                return;
+            }
+
+            const item = dataJadwal.find(i => i.id === idAktif);
+            if (item) {
+                item.foto = urlFotoSementara;
+                item.status = 'Selesai';
+                simpanKeStorage();
+                renderTabel();
+                renderStatistik();
+            }
+            tutupModalUpload();
+        }
+
+        // Lihat Foto Modal
+        function lihatFoto(url) {
+            document.getElementById('img-full').src = url;
+            document.getElementById('modal-lihat').classList.remove('hidden');
+        }
+
+        function tutupModalLihat() {
+            document.getElementById('modal-lihat').classList.add('hidden');
+        }
+
+        // Ekspor Data ke Format CSV
+        function exportKeCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,ID,Waktu,Shift,Zona,PIC,Status\n";
+            dataJadwal.forEach(row => {
+                csvContent += `${row.id},"${row.waktu}","${row.shift}","${row.zona}","${row.pic}","${row.status}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Laporan_Kebersihan_Gudang_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
