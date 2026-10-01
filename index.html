@@ -3,9 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CleanWarehouse - Monitoring & Jadwal PIC</title>
+    <title>Innilo-Aps (Warehouse Report System)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        milo: {
+                            800: '#004225',
+                            700: '#005A36',
+                            600: '#007A48',
+                            500: '#009A5B',
+                            100: '#E6F4ED',
+                            50: '#F0F9F4',
+                            accent: '#8B4513',
+                            amber: '#D97706'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         @media print {
             .no-print { display: none !important; }
@@ -14,26 +34,26 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen pb-12">
+<body class="bg-milo-50 font-sans min-h-screen pb-12 text-gray-800">
 
-    <!-- Topbar Navigasi & Switcher User -->
-    <nav class="bg-blue-900 text-white px-4 md:px-6 py-3.5 shadow-md flex flex-wrap justify-between items-center gap-3 no-print">
+    <!-- Topbar Navigasi Utama -->
+    <nav class="bg-milo-800 text-white px-4 md:px-6 py-3.5 shadow-md flex flex-wrap justify-between items-center gap-3 no-print border-b-2 border-amber-600">
         <div class="flex items-center space-x-3">
-            <span class="text-2xl">🧹</span>
+            <span class="text-2xl">🏭</span>
             <div>
-                <h1 class="text-lg md:text-xl font-bold tracking-wide leading-tight">CleanWarehouse</h1>
-                <p class="text-xs text-blue-200">System Monitoring Kebersihan Gudang</p>
+                <h1 class="text-lg md:text-xl font-bold tracking-wide leading-tight">Innilo-Aps</h1>
+                <p class="text-xs text-milo-100">Warehouse Report System</p>
             </div>
         </div>
 
         <!-- Pilihan Peran Pengguna (Role Switcher) -->
-        <div class="flex items-center space-x-2 bg-blue-950/70 p-1.5 rounded-xl border border-blue-700/50">
-            <span class="text-xs text-blue-200 font-medium pl-2 hidden sm:inline">Pengguna:</span>
-            <select id="user-role-select" onchange="gantiPengguna(this.value)" class="bg-blue-800 text-white text-xs font-semibold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer border border-blue-600">
+        <div class="flex items-center space-x-2 bg-milo-800/80 p-1.5 rounded-xl border border-milo-600">
+            <span class="text-xs text-milo-100 font-medium pl-2 hidden sm:inline">Pengguna:</span>
+            <select id="user-role-select" onchange="gantiPengguna(this.value)" class="bg-milo-700 text-white text-xs font-semibold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer border border-milo-500">
                 <optgroup label="Pengawas">
                     <option value="Supervisor" selected>👑 Supervisor (Akses Penuh)</option>
                 </optgroup>
-                <optgroup label="Staf Kebersihan (PIC)">
+                <optgroup label="Staf Kebersihan / Gudang">
                     <option value="Agus Suwandani">👤 Agus Suwandani</option>
                     <option value="Aldy Surya Pratama">👤 Aldy Surya Pratama</option>
                     <option value="Andri Sembiring">👤 Andri Sembiring</option>
@@ -55,155 +75,336 @@
                 </optgroup>
             </select>
         </div>
-
-        <!-- Tombol Aksi Tambahan (Hanya Supervisor) -->
-        <div class="hidden lg:flex items-center space-x-2 role-supervisor">
-            <button onclick="exportKeCSV()" class="flex items-center space-x-1 bg-green-700 hover:bg-green-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow-sm">
-                <span>📊</span>
-                <span>Ekspor CSV</span>
-            </button>
-            <button onclick="window.print()" class="flex items-center space-x-1 bg-blue-700 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow-sm">
-                <span>🖨️</span>
-                <span>Cetak Laporan</span>
-            </button>
-        </div>
     </nav>
 
+    <!-- Navigasi Menu Tab Utama -->
+    <div class="bg-milo-700 text-white px-4 md:px-6 shadow-inner no-print border-t border-milo-600">
+        <div class="max-w-6xl mx-auto flex flex-wrap space-x-2 text-xs md:text-sm font-semibold">
+            <button onclick="pindahMenu('kebersihan')" id="nav-kebersihan" class="menu-nav-btn px-4 py-3 border-b-4 border-amber-400 text-white flex items-center gap-2">
+                <span>🧹</span>
+                <span>Jadwal Kebersihan</span>
+            </button>
+            <button onclick="pindahMenu('damaged')" id="nav-damaged" class="menu-nav-btn px-4 py-3 border-b-4 border-transparent text-milo-100 hover:text-white flex items-center gap-2">
+                <span>⚠️</span>
+                <span>Pendataan Barang Damaged</span>
+            </button>
+            <!-- Menu Khusus Supervisor -->
+            <button onclick="pindahMenu('opname')" id="nav-opname" class="role-supervisor menu-nav-btn px-4 py-3 border-b-4 border-transparent text-milo-100 hover:text-white flex items-center gap-2">
+                <span>📊</span>
+                <span>Report Hasil Opname Daily</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Banner Info Akun Aktif -->
-    <div id="banner-user" class="bg-blue-50 border-b border-blue-100 px-4 py-2.5 text-xs text-blue-800 flex justify-between items-center no-print">
+    <div id="banner-user" class="bg-milo-100 border-b border-milo-200 px-4 py-2.5 text-xs text-milo-800 flex justify-between items-center no-print">
         <div class="max-w-6xl mx-auto w-full flex justify-between items-center">
-            <span id="text-user-active">Mode: <strong>Supervisor</strong> (Melihat seluruh tugas)</span>
-            <span id="badge-role-type" class="bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">Akses Penuh</span>
+            <span id="text-user-active">Mode: <strong>Supervisor</strong> (Melihat seluruh data & verifikasi laporan)</span>
+            <span id="badge-role-type" class="bg-milo-700 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">Akses Penuh</span>
         </div>
     </div>
 
     <!-- Header Cetak -->
     <div class="hidden print:block p-6 border-b text-center">
-        <h1 class="text-2xl font-bold">Laporan Ringkasan & Jadwal Kebersihan Gudang</h1>
-        <p class="text-sm text-gray-600">CleanWarehouse System — Tanggal Cetak: <span id="print-date"></span></p>
+        <h1 class="text-2xl font-bold">Laporan Ringkasan - Innilo-Aps (Warehouse Report System)</h1>
+        <p class="text-sm text-gray-600">Tanggal Cetak: <span id="print-date"></span></p>
     </div>
 
-    <!-- Container Utama -->
-    <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+    <!-- ================= HALAMAN 1: JADWAL KEBERSIHAN ================= -->
+    <div id="page-kebersihan" class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
         
-        <!-- Stat Ringkasan -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+        <!-- Stat Kebersihan -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-milo-600 flex justify-between items-center">
                 <div>
-                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Tugas Hari Ini</span>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Zona</span>
                     <div class="mt-1 flex items-baseline gap-2">
                         <span id="stat-total" class="text-3xl font-extrabold text-gray-800">0</span>
-                        <span class="text-sm font-semibold text-gray-500">Zona</span>
+                        <span class="text-sm font-semibold text-gray-500">Area</span>
                     </div>
                 </div>
-                <div class="bg-blue-50 p-3 rounded-full text-blue-600 text-xl">📋</div>
+                <div class="bg-milo-50 p-3 rounded-full text-milo-700 text-xl">📋</div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex justify-between items-center">
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-600 flex justify-between items-center">
                 <div>
-                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Selesai</span>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Kebersihan Selesai</span>
                     <div class="mt-1 flex items-baseline gap-2">
-                        <span id="stat-selesai" class="text-3xl font-extrabold text-green-600">0</span>
+                        <span id="stat-selesai" class="text-3xl font-extrabold text-green-700">0</span>
                         <span class="text-sm font-semibold text-gray-500">Zona</span>
                     </div>
                 </div>
-                <div class="bg-green-50 p-3 rounded-full text-green-600 text-xl">✅</div>
+                <div class="bg-green-50 p-3 rounded-full text-green-700 text-xl">✅</div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center">
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-amber-600 flex justify-between items-center">
                 <div>
-                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Belum / Dalam Proses</span>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Belum Selesai</span>
                     <div class="mt-1 flex items-baseline gap-2">
-                        <span id="stat-pending" class="text-3xl font-extrabold text-red-600">0</span>
+                        <span id="stat-pending" class="text-3xl font-extrabold text-amber-600">0</span>
                         <span class="text-sm font-semibold text-gray-500">Zona</span>
                     </div>
                 </div>
-                <div class="bg-red-50 p-3 rounded-full text-red-600 text-xl">⏳</div>
+                <div class="bg-amber-50 p-3 rounded-full text-amber-600 text-xl">⏳</div>
             </div>
         </div>
 
-        <!-- Leaderboard & Capaian PIC -->
-        <div class="bg-white rounded-xl shadow-sm p-5 md:p-6 border border-gray-100">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-base md:text-lg font-bold text-gray-800">🏆 Leaderboard Performa Petugas (PIC)</h2>
-                    <p class="text-xs text-gray-500">Peringkat berdasarkan persentase penyelesaian zona tugas</p>
-                </div>
-                <span class="text-xs bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full">Real-time</span>
-            </div>
-
-            <div id="container-pic" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Data PIC di-render otomatis lewat JS -->
-            </div>
+        <!-- Leaderboard PIC Kebersihan -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-milo-100">
+            <h2 class="text-base font-bold text-milo-800 mb-3">🏆 Leaderboard Performa Kebersihan (PIC)</h2>
+            <div id="container-pic" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <!-- Tabel Konten Utama -->
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-            <div class="p-4 md:p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Jadwal Kebersihan Gudang</h2>
-                    <p class="text-xs text-gray-500">Kelola pengerjaan dan verifikasi bukti foto</p>
-                </div>
-
+        <!-- Tabel Jadwal Kebersihan -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-milo-100">
+            <div class="p-4 border-b border-milo-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 class="text-lg font-bold text-milo-800">Jadwal Kebersihan Gudang Hari Ini</h2>
                 <div class="flex flex-wrap items-center gap-2 no-print">
-                    <input type="text" id="input-search" oninput="filterDanCari()" placeholder="Cari Zona atau PIC..." class="text-xs bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    
-                    <!-- Tombol Khusus Supervisor -->
-                    <button onclick="resetDataAwal()" title="Reset data ke default" class="role-supervisor bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-semibold transition">
-                        🔄 Reset Data
+                    <button onclick="exportKebersihanCSV()" class="role-supervisor bg-milo-700 hover:bg-milo-800 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1">
+                        <span>📊</span><span>Ekspor CSV</span>
                     </button>
-
-                    <button onclick="bukaModalTambah()" class="role-supervisor bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
-                        <span>+</span>
-                        <span>Tambah Jadwal</span>
-                    </button>
+                    <button onclick="resetDataAwal()" class="role-supervisor bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-semibold">🔄 Reset</button>
+                    <button onclick="bukaModalTambah()" class="role-supervisor bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-xs shadow-sm">+ Tambah Jadwal</button>
                 </div>
-            </div>
-
-            <!-- Filter Status -->
-            <div class="flex border-b border-gray-100 bg-gray-50/50 px-4 pt-2 gap-2 text-xs font-semibold no-print">
-                <button onclick="setFilter('semua')" id="tab-semua" class="tab-btn px-4 py-2 border-b-2 border-blue-600 text-blue-600">Semua</button>
-                <button onclick="setFilter('Belum')" id="tab-Belum" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Belum</button>
-                <button onclick="setFilter('Proses')" id="tab-Proses" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Proses</button>
-                <button onclick="setFilter('Selesai')" id="tab-Selesai" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Selesai</button>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-gray-100 text-gray-700 text-xs uppercase font-semibold tracking-wider">
-                            <th class="py-3 px-4 md:px-6">Waktu & Shift</th>
-                            <th class="py-3 px-4 md:px-6">Area / Zona</th>
-                            <th class="py-3 px-4 md:px-6">Petugas (PIC)</th>
-                            <th class="py-3 px-4 md:px-6">Foto Bukti</th>
-                            <th class="py-3 px-4 md:px-6">Status</th>
-                            <th class="py-3 px-4 md:px-6 no-print">Aksi</th>
+                        <tr class="bg-milo-100 text-milo-800 text-xs uppercase font-semibold">
+                            <th class="py-3 px-4">Waktu & Shift</th>
+                            <th class="py-3 px-4">Area / Zona</th>
+                            <th class="py-3 px-4">Petugas (PIC)</th>
+                            <th class="py-3 px-4">Foto Bukti</th>
+                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4 no-print">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="tabel-jadwal" class="divide-y divide-gray-100 text-sm font-medium text-gray-700">
-                        <!-- Baris tabel di-render melalui JavaScript -->
+                    <tbody id="tabel-jadwal" class="divide-y divide-milo-100 text-sm font-medium"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HALAMAN 2: DATA BARANG DAMAGED ================= -->
+    <div id="page-damaged" class="hidden max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        
+        <!-- Stat Barang Damaged -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Laporan Damaged</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-damaged-total" class="text-3xl font-extrabold text-gray-800">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Laporan</span>
+                    </div>
+                </div>
+                <div class="bg-amber-50 p-3 rounded-full text-amber-600 text-xl">📦</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Produk Rusak (Qty)</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-damaged-qty" class="text-3xl font-extrabold text-red-600">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Pcs/Box</span>
+                    </div>
+                </div>
+                <div class="bg-red-50 p-3 rounded-full text-red-600 text-xl">⚠️</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-milo-600 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Selesai Diproses</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-damaged-selesai" class="text-3xl font-extrabold text-milo-700">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Item</span>
+                    </div>
+                </div>
+                <div class="bg-milo-50 p-3 rounded-full text-milo-700 text-xl">✅</div>
+            </div>
+        </div>
+
+        <!-- Tabel & Header Laporan Barang Damaged -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-milo-100">
+            <div class="p-4 md:p-5 border-b border-milo-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-milo-800">Pendataan Barang Damaged / Rusak</h2>
+                    <p class="text-xs text-gray-500">Dokumentasikan foto, jumlah Qty, dan deskripsi kerusakan produk di gudang</p>
+                </div>
+
+                <div class="flex items-center gap-2 no-print">
+                    <button onclick="exportDamagedCSV()" class="bg-milo-700 hover:bg-milo-800 text-white font-semibold px-3 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                        <span>📊</span>
+                        <span>Ekspor CSV</span>
+                    </button>
+                    <button onclick="bukaModalDamaged()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                        <span>📷 +</span>
+                        <span>Laporkan Barang Damaged</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-milo-100 text-milo-800 text-xs uppercase font-semibold tracking-wider">
+                            <th class="py-3 px-4">Tanggal & Waktu</th>
+                            <th class="py-3 px-4">Foto Bukti</th>
+                            <th class="py-3 px-4">Nama / Deskripsi Produk</th>
+                            <th class="py-3 px-4">Qty Rusak</th>
+                            <th class="py-3 px-4">Lokasi Area</th>
+                            <th class="py-3 px-4">Pelapor (Staf)</th>
+                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4 no-print">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-damaged" class="divide-y divide-milo-100 text-sm font-medium text-gray-700">
+                        <!-- Data Damaged di-render lewat JS -->
                     </tbody>
                 </table>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- MODAL POPUP: TAMBAH JADWAL BARU -->
+    <!-- ================= HALAMAN 3: REPORT HASIL OPNAME DAILY (KHUSUS SUPERVISOR) ================= -->
+    <div id="page-opname" class="hidden max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        
+        <!-- Header & Form Upload Excel Opname -->
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-milo-100 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4 border-milo-100">
+                <div>
+                    <h2 class="text-lg font-bold text-milo-800 flex items-center gap-2">
+                        <span>📊</span>
+                        <span>Upload & Pengelolaan Report Opname Daily</span>
+                    </h2>
+                    <p class="text-xs text-gray-500">Unggah berkas laporan Excel (.xlsx / .xls / .csv) hasil opname harian untuk diarsipkan dan diunduh di masa mendatang.</p>
+                </div>
+                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">🔒 Akses Khusus Supervisor</span>
+            </div>
+
+            <form id="form-opname" onsubmit="simpanOpnameDaily(event)" class="space-y-4 bg-milo-50/60 p-4 rounded-xl border border-milo-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-milo-800 mb-1">Tanggal Opname *</label>
+                        <input type="date" id="opname-tanggal" required class="w-full border border-milo-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-milo-800 mb-1">Judul / Keterangan Report *</label>
+                        <input type="text" id="opname-judul" required placeholder="Contoh: Report Opname Daily Gudang A - Shift 1" class="w-full border border-milo-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-milo-800 mb-1">Pilih File Excel / Spreadsheet (.xlsx, .xls, .csv) *</label>
+                    <input type="file" id="opname-file" accept=".xlsx, .xls, .csv" required class="w-full text-xs text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-milo-700 file:text-white hover:file:bg-milo-800 cursor-pointer">
+                    <p class="text-[10px] text-gray-400 mt-1">*File akan diunggah dan tersimpan aman di aplikasi untuk dapat di-download kembali kapan saja.</p>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="bg-milo-700 hover:bg-milo-800 text-white font-bold px-5 py-2.5 rounded-lg text-xs shadow-sm transition flex items-center gap-1.5">
+                        <span>📥</span>
+                        <span>Unggah Laporan Opname</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabel Daftar Berkas Opname Daily yang Tersimpan -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-milo-100">
+            <div class="p-4 border-b border-milo-100 flex justify-between items-center bg-white">
+                <h3 class="text-sm font-bold text-milo-800">Daftar Berkas Opname Daily Tersimpan</h3>
+                <span id="stat-opname-count" class="text-xs font-bold bg-milo-100 text-milo-800 px-3 py-1 rounded-full">0 Berkas</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-milo-100 text-milo-800 text-xs uppercase font-semibold">
+                            <th class="py-3 px-4">Tanggal Opname</th>
+                            <th class="py-3 px-4">Judul / Deskripsi Laporan</th>
+                            <th class="py-3 px-4">Nama File Berkas</th>
+                            <th class="py-3 px-4">Ukuran File</th>
+                            <th class="py-3 px-4">Waktu Unggah</th>
+                            <th class="py-3 px-4 no-print">Aksi / Download</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-opname" class="divide-y divide-milo-100 text-sm font-medium text-gray-700">
+                        <!-- Data Opname di-render lewat JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: DOKUMENTASI BARANG DAMAGED BARU -->
+    <div id="modal-damaged" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4 border-t-4 border-amber-600">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-base font-bold text-gray-800">Form Laporan Barang Damaged</h3>
+                <button onclick="tutupModalDamaged()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            
+            <form id="form-damaged" onsubmit="simpanDamagedBaru(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Ambil / Unggah Foto Bukti *</label>
+                    <input type="file" id="damaged-foto" accept="image/*" capture="environment" onchange="previewFotoDamaged(event)" required class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-800 hover:file:bg-amber-100 cursor-pointer">
+                </div>
+
+                <div id="container-preview-damaged" class="hidden border rounded-lg p-2 bg-milo-50 text-center">
+                    <img id="img-preview-damaged" src="" class="max-h-36 mx-auto rounded shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama / Deskripsi Produk *</label>
+                    <input type="text" id="damaged-nama" required placeholder="Contoh: Karton Indomie Rasa Soto (Bocor)" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Jumlah (Qty Rusak) *</label>
+                        <input type="number" id="damaged-qty" min="1" required placeholder="Contoh: 5" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Satuan</label>
+                        <select id="damaged-satuan" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                            <option value="Pcs">Pcs</option>
+                            <option value="Box / Karton">Box / Karton</option>
+                            <option value="Karton / Master Carton">Karton / Master Carton</option>
+                            <option value="Pallet">Pallet</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Area / Rak *</label>
+                    <input type="text" id="damaged-lokasi" required placeholder="Contoh: Rak B-03 / Loading Dock" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="tutupModalDamaged()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 shadow-sm">Kirim Laporan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: TAMBAH JADWAL KEBERSIHAN -->
     <div id="modal-tambah" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print">
-        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4 border-t-4 border-milo-700">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="text-base font-bold text-gray-800">Tambah Jadwal Kebersihan</h3>
-                <button onclick="tutupModalTambah()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                <button onclick="tutupModalTambah()" class="text-gray-400 font-bold">✕</button>
             </div>
             
             <form id="form-tambah" onsubmit="simpanJadwalBaru(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Area / Zona *</label>
-                    <input type="text" id="add-zona" required placeholder="Contoh: Zona E - Area Sorting" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="add-zona" required placeholder="Contoh: Zona E - Area Sorting" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Petugas (PIC) *</label>
-                    <select id="add-pic" required class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    <select id="add-pic" required class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
                         <option value="Agus Suwandani">Agus Suwandani</option>
                         <option value="Aldy Surya Pratama">Aldy Surya Pratama</option>
                         <option value="Andri Sembiring">Andri Sembiring</option>
@@ -227,11 +428,11 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Waktu *</label>
-                        <input type="text" id="add-waktu" required placeholder="08:00 - 09:00" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="text" id="add-waktu" required placeholder="08:00 - 09:00" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Shift</label>
-                        <select id="add-shift" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        <select id="add-shift" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
                             <option value="Shift 1">Shift 1</option>
                             <option value="Shift 2">Shift 2</option>
                             <option value="Shift 3">Shift 3</option>
@@ -240,32 +441,26 @@
                 </div>
 
                 <div class="flex justify-end space-x-2 pt-3 border-t">
-                    <button type="button" onclick="tutupModalTambah()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 shadow-sm">Simpan Jadwal</button>
+                    <button type="button" onclick="tutupModalTambah()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-milo-700 text-white text-xs font-semibold rounded-lg">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL POPUP: UPLOAD FOTO BUKTI -->
+    <!-- MODAL POPUP: UPLOAD FOTO BUKTI KEBERSIHAN -->
     <div id="modal-upload" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print">
-        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4 border-t-4 border-milo-700">
             <h3 class="text-base font-bold text-gray-800 border-b pb-2">Upload Bukti Kebersihan</h3>
-            <p class="text-xs text-gray-500">Unggah foto kondisi area setelah dibersihkan sebagai bukti pengerjaan.</p>
-            
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih / Ambil Foto:</label>
-                <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="previewFoto(event)" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="previewFoto(event)" class="w-full text-xs text-gray-500">
             </div>
-
-            <!-- Preview Gambar -->
-            <div id="container-preview" class="hidden border rounded-lg p-2 bg-gray-50 text-center">
-                <img id="img-preview" src="" class="max-h-48 mx-auto rounded-lg shadow-sm">
+            <div id="container-preview" class="hidden border rounded-lg p-2 text-center">
+                <img id="img-preview" src="" class="max-h-48 mx-auto rounded shadow-sm">
             </div>
-
             <div class="flex justify-end space-x-2 pt-2 border-t">
-                <button onclick="tutupModalUpload()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200">Batal</button>
-                <button onclick="simpanFotoSelesai()" class="px-4 py-2 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 shadow-sm">Kirim & Selesai</button>
+                <button onclick="tutupModalUpload()" class="px-4 py-2 bg-gray-100 text-xs font-semibold rounded-lg">Batal</button>
+                <button onclick="simpanFotoSelesai()" class="px-4 py-2 bg-milo-700 text-white text-xs font-semibold rounded-lg">Selesai</button>
             </div>
         </div>
     </div>
@@ -274,8 +469,8 @@
     <div id="modal-lihat" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50 no-print" onclick="tutupModalLihat()">
         <div class="bg-white rounded-xl max-w-lg w-full p-4 shadow-xl space-y-3 relative" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-xs font-bold text-gray-800">Foto Bukti Kebersihan</h3>
-                <button onclick="tutupModalLihat()" class="text-gray-500 font-bold hover:text-black">✕</button>
+                <h3 class="text-xs font-bold text-gray-800">Foto Dokumen Bukti</h3>
+                <button onclick="tutupModalLihat()" class="text-gray-500 font-bold">✕</button>
             </div>
             <img id="img-full" src="" class="w-full h-auto rounded-lg max-h-96 object-cover">
         </div>
@@ -283,55 +478,92 @@
 
     <!-- SCRIPT LOGIKA HTML/JS -->
     <script>
-        // Data Default Awal dengan beberapa nama dari daftar PIC baru
-        const dataDefault = [
+        // Data Default Kebersihan
+        const defaultJadwal = [
             { id: 1, waktu: '08:00 - 09:00', shift: 'Shift 1', zona: 'Zona A - Loading Dock', pic: 'Aldy Surya Pratama', foto: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400', status: 'Selesai' },
-            { id: 2, waktu: '09:30 - 10:30', shift: 'Shift 1', zona: 'Zona B - Lorong Rak 1-5', pic: 'Bobby Disani', foto: null, status: 'Proses' },
-            { id: 3, waktu: '11:00 - 12:00', shift: 'Shift 1', zona: 'Zona C - Area Packing', pic: 'Nanda Al Hafids', foto: null, status: 'Belum' },
-            { id: 4, waktu: '13:00 - 14:00', shift: 'Shift 2', zona: 'Zona D - Area Office & Toilet', pic: 'Irfansyah', foto: null, status: 'Belum' }
+            { id: 2, waktu: '09:30 - 10:30', shift: 'Shift 1', zona: 'Zona B - Lorong Rak 1-5', pic: 'Bobby Disani', foto: null, status: 'Proses' }
         ];
 
-        let dataJadwal = JSON.parse(localStorage.getItem('cleanwarehouse_data')) || dataDefault;
-        let userAktif = localStorage.getItem('cleanwarehouse_user') || 'Supervisor';
+        // Data Default Damaged Goods
+        const defaultDamaged = [
+            { id: 101, tanggal: '2026-10-01 09:15', nama: 'Karton Indomie Rasa Soto (Bocor)', qty: 3, satuan: 'Box / Karton', lokasi: 'Rak B-02', pelapor: 'Bobby Disani', foto: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400', status: 'Pending' }
+        ];
+
+        // Data Default Opname Daily
+        const defaultOpname = [];
+
+        let dataJadwal = JSON.parse(localStorage.getItem('innilo_data')) || defaultJadwal;
+        let dataDamaged = JSON.parse(localStorage.getItem('innilo_damaged')) || defaultDamaged;
+        let dataOpname = JSON.parse(localStorage.getItem('innilo_opname')) || defaultOpname;
+        let userAktif = localStorage.getItem('innilo_user') || 'Supervisor';
 
         let idAktif = null;
         let urlFotoSementara = '';
-        let filterStatus = 'semua';
+        let urlFotoDamagedSementara = '';
 
         function simpanKeStorage() {
-            localStorage.setItem('cleanwarehouse_data', JSON.stringify(dataJadwal));
-        }
-
-        function resetDataAwal() {
-            if (confirm('Apakah Anda yakin ingin mengembalikan data ke jadwal default?')) {
-                dataJadwal = [...dataDefault];
-                simpanKeStorage();
-                renderTabel();
-                renderStatistik();
-            }
+            localStorage.setItem('innilo_data', JSON.stringify(dataJadwal));
+            localStorage.setItem('innilo_damaged', JSON.stringify(dataDamaged));
+            localStorage.setItem('innilo_opname', JSON.stringify(dataOpname));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-role-select').value = userAktif;
+            
+            // Set default input tanggal hari ini untuk form opname
+            document.getElementById('opname-tanggal').value = new Date().toISOString().slice(0,10);
+
             updateTampilanPengguna();
             renderTabel();
+            renderDamaged();
+            renderOpname();
             renderStatistik();
             document.getElementById('print-date').innerText = new Date().toLocaleDateString('id-ID', {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
         });
 
+        // Pindah Tab Menu
+        function pindahMenu(menu) {
+            document.querySelectorAll('.menu-nav-btn').forEach(btn => {
+                btn.classList.remove('border-amber-400', 'text-white');
+                btn.classList.add('border-transparent', 'text-milo-100');
+            });
+
+            document.getElementById('page-kebersihan').classList.add('hidden');
+            document.getElementById('page-damaged').classList.add('hidden');
+            document.getElementById('page-opname').classList.add('hidden');
+
+            if (menu === 'kebersihan') {
+                document.getElementById('nav-kebersihan').classList.add('border-amber-400', 'text-white');
+                document.getElementById('page-kebersihan').classList.remove('hidden');
+            } else if (menu === 'damaged') {
+                document.getElementById('nav-damaged').classList.add('border-amber-400', 'text-white');
+                document.getElementById('page-damaged').classList.remove('hidden');
+            } else if (menu === 'opname') {
+                document.getElementById('nav-opname').classList.add('border-amber-400', 'text-white');
+                document.getElementById('page-opname').classList.remove('hidden');
+            }
+        }
+
         function gantiPengguna(namaUser) {
             userAktif = namaUser;
-            localStorage.setItem('cleanwarehouse_user', userAktif);
+            localStorage.setItem('innilo_user', userAktif);
+            
+            // Jika pindah ke Staf saat di menu opname, kembalikan ke menu kebersihan
+            if (userAktif !== 'Supervisor' && !document.getElementById('page-opname').classList.contains('hidden')) {
+                pindahMenu('kebersihan');
+            }
+
             updateTampilanPengguna();
             renderTabel();
+            renderDamaged();
+            renderOpname();
             renderStatistik();
         }
 
         function updateTampilanPengguna() {
             const isSupervisor = userAktif === 'Supervisor';
-            
             document.querySelectorAll('.role-supervisor').forEach(el => {
                 if (isSupervisor) el.classList.remove('hidden');
                 else el.classList.add('hidden');
@@ -341,274 +573,343 @@
             const badgeRole = document.getElementById('badge-role-type');
 
             if (isSupervisor) {
-                bannerText.innerHTML = `Mode Pengguna: <strong>Supervisor</strong> (Melihat dan mengelola seluruh tugas staf)`;
+                bannerText.innerHTML = `Mode Pengguna: <strong>Supervisor</strong> (Melihat seluruh data, opname daily & verifikasi laporan)`;
                 badgeRole.innerText = 'Akses Penuh';
-                badgeRole.className = 'bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider';
+                badgeRole.className = 'bg-milo-700 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase';
             } else {
-                bannerText.innerHTML = `Mode Staf: <strong>${userAktif}</strong> (Hanya mengelola pengerjaan tugas Anda)`;
+                bannerText.innerHTML = `Mode Staf: <strong>${userAktif}</strong> (Bisa laporkan barang damaged & kerjakan tugas)`;
                 badgeRole.innerText = 'Mode Staf / PIC';
-                badgeRole.className = 'bg-green-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider';
+                badgeRole.className = 'bg-amber-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase';
             }
         }
 
-        function renderTabel() {
-            const tbody = document.getElementById('tabel-jadwal');
-            tbody.innerHTML = '';
-
-            const keyword = document.getElementById('input-search').value.toLowerCase();
-            const isSupervisor = userAktif === 'Supervisor';
-
-            const dataFiltered = dataJadwal.filter(item => {
-                const matchStatus = filterStatus === 'semua' || item.status === filterStatus;
-                const matchSearch = item.zona.toLowerCase().includes(keyword) || item.pic.toLowerCase().includes(keyword);
-                return matchStatus && matchSearch;
-            });
-
-            if (dataFiltered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">Tidak ada data jadwal yang cocok.</td></tr>`;
+        // ================= LOGIKA OPNAME DAILY =================
+        function simpanOpnameDaily(event) {
+            event.preventDefault();
+            
+            if (userAktif !== 'Supervisor') {
+                alert('Akses ditolak! Hanya Supervisor yang diperbolehkan mengunggah file opname.');
                 return;
             }
 
-            dataFiltered.forEach(item => {
+            const tanggal = document.getElementById('opname-tanggal').value;
+            const judul = document.getElementById('opname-judul').value;
+            const fileInput = document.getElementById('opname-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Silakan pilih file Excel / Spreadsheet terlebih dahulu!');
+                return;
+            }
+
+            // Membaca File dan Konversi ke Base64 Data URL
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileBase64 = e.target.result;
+                const sizeKb = Math.round(file.size / 1024);
+                
+                const now = new Date();
+                const uploadTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                const itemBaru = {
+                    id: Date.now(),
+                    tanggal: tanggal,
+                    judul: judul,
+                    fileName: file.name,
+                    fileSize: sizeKb > 1024 ? (sizeKb / 1024).toFixed(2) + ' MB' : sizeKb + ' KB',
+                    fileData: fileBase64,
+                    uploadTime: `${now.toISOString().slice(0,10)} ${uploadTime}`
+                };
+
+                dataOpname.unshift(itemBaru);
+                simpanKeStorage();
+                
+                document.getElementById('form-opname').reset();
+                document.getElementById('opname-tanggal').value = new Date().toISOString().slice(0,10);
+                
+                renderOpname();
+                alert('Laporan Opname Daily berhasil diunggah!');
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function renderOpname() {
+            const tbody = document.getElementById('tabel-opname');
+            tbody.innerHTML = '';
+
+            document.getElementById('stat-opname-count').innerText = `${dataOpname.length} Berkas`;
+
+            if (dataOpname.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">Belum ada berkas Opname Daily yang diunggah.</td></tr>`;
+                return;
+            }
+
+            dataOpname.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50 transition border-b border-gray-100';
-
-                if (!isSupervisor && item.pic === userAktif) {
-                    tr.classList.add('bg-blue-50/40');
-                }
-
-                let badgeStatus = '';
-                if (item.status === 'Selesai') badgeStatus = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>`;
-                else if (item.status === 'Proses') badgeStatus = `<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold">Proses</span>`;
-                else badgeStatus = `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Belum</span>`;
-
-                let fotoElement = `<span class="text-xs text-gray-400 italic">Belum ada</span>`;
-                if (item.foto) {
-                    fotoElement = `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 rounded border border-blue-200 flex items-center gap-1 transition">📷 Lihat Foto</button>`;
-                }
-
-                let aksiElement = '';
-                const bisaEdit = isSupervisor || item.pic === userAktif;
-
-                if (bisaEdit) {
-                    if (item.status === 'Belum') {
-                        aksiElement = `<button onclick="ubahStatus(${item.id}, 'Proses')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Kerjakan</button>`;
-                    } else if (item.status === 'Proses') {
-                        aksiElement = `<button onclick="bukaModalUpload(${item.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Tandai Selesai</button>`;
-                    } else {
-                        aksiElement = `<span class="text-gray-400 text-xs font-semibold">Tuntas ✅</span>`;
-                    }
-                } else {
-                    aksiElement = `<span class="text-gray-400 text-xs italic">Tugas ${item.pic}</span>`;
-                }
-
-                const hapusBtn = isSupervisor 
-                    ? `<button onclick="hapusJadwal(${item.id})" title="Hapus" class="text-red-400 hover:text-red-600 text-xs ml-2">🗑️</button>`
-                    : '';
+                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
 
                 tr.innerHTML = `
-                    <td class="py-4 px-4 md:px-6 font-semibold text-gray-800">
-                        <div>${item.waktu}</div>
-                        <div class="text-xs font-normal text-gray-400">${item.shift}</div>
-                    </td>
-                    <td class="py-4 px-4 md:px-6 font-medium">${item.zona}</td>
-                    <td class="py-4 px-4 md:px-6">
-                        <span class="font-semibold">${item.pic}</span>
-                        ${item.pic === userAktif ? '<span class="ml-1 text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">Anda</span>' : ''}
-                    </td>
-                    <td class="py-4 px-4 md:px-6">${fotoElement}</td>
-                    <td class="py-4 px-4 md:px-6">${badgeStatus}</td>
-                    <td class="py-4 px-4 md:px-6 no-print flex items-center gap-1">
-                        ${aksiElement}
-                        ${hapusBtn}
+                    <td class="py-3.5 px-4 font-bold text-milo-800 text-xs">${item.tanggal}</td>
+                    <td class="py-3.5 px-4 font-semibold text-gray-800">${item.judul}</td>
+                    <td class="py-3.5 px-4 text-xs font-mono text-milo-700">${item.fileName}</td>
+                    <td class="py-3.5 px-4 text-xs text-gray-500">${item.fileSize}</td>
+                    <td class="py-3.5 px-4 text-xs text-gray-400">${item.uploadTime}</td>
+                    <td class="py-3.5 px-4 no-print flex items-center gap-2">
+                        <a href="${item.fileData}" download="${item.fileName}" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow-sm transition">
+                            <span>📥</span>
+                            <span>Download File</span>
+                        </a>
+                        <button onclick="hapusOpname(${item.id})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function renderStatistik() {
-            const total = dataJadwal.length;
-            const selesai = dataJadwal.filter(i => i.status === 'Selesai').length;
-            const pending = total - selesai;
+        function hapusOpname(id) {
+            if (userAktif !== 'Supervisor') return;
+            if (confirm('Apakah Anda yakin ingin menghapus berkas opname ini?')) {
+                dataOpname = dataOpname.filter(i => i.id !== id);
+                simpanKeStorage();
+                renderOpname();
+            }
+        }
 
-            document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-selesai').innerText = selesai;
-            document.getElementById('stat-pending').innerText = pending;
+        // RENDER DAMAGED GOODS
+        function renderDamaged() {
+            const tbody = document.getElementById('tabel-damaged');
+            tbody.innerHTML = '';
 
-            const picStats = {};
-            dataJadwal.forEach(item => {
-                if (!picStats[item.pic]) picStats[item.pic] = { total: 0, selesai: 0 };
-                picStats[item.pic].total++;
-                if (item.status === 'Selesai') picStats[item.pic].selesai++;
-            });
-
-            const containerPic = document.getElementById('container-pic');
-            containerPic.innerHTML = '';
-
-            const listPic = Object.keys(picStats).map(name => {
-                const totalPic = picStats[name].total;
-                const selesaiPic = picStats[name].selesai;
-                const persen = totalPic > 0 ? Math.round((selesaiPic / totalPic) * 100) : 0;
-                return { name, total: totalPic, selesai: selesaiPic, persen };
-            }).sort((a, b) => b.persen - a.persen);
-
-            if (listPic.length === 0) {
-                containerPic.innerHTML = `<p class="text-xs text-gray-400 col-span-3">Belum ada tugas yang ditetapkan ke staf.</p>`;
+            if (dataDamaged.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400 text-xs">Belum ada laporan barang damaged.</td></tr>`;
                 return;
             }
 
-            const badges = ['🥇', '🥈', '🥉'];
-            listPic.forEach((pic, index) => {
-                const rankBadge = badges[index] || '⭐';
-                const card = document.createElement('div');
-                card.className = `p-4 rounded-xl border ${pic.name === userAktif ? 'border-blue-400 bg-blue-50/50' : 'border-gray-100 bg-gray-50/60'} relative space-y-2`;
-                card.innerHTML = `
-                    <span class="absolute top-3 right-3 text-lg">${rankBadge}</span>
-                    <p class="font-bold text-gray-800 text-xs">${pic.name} ${pic.name === userAktif ? '(Anda)' : ''}</p>
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-xs font-semibold">
-                            <span class="text-gray-500">Tugas Selesai</span>
-                            <span class="text-blue-600">${pic.selesai} / ${pic.total} Zona (${pic.persen}%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                            <div class="bg-blue-600 h-full rounded-full transition-all duration-300" style="width: ${pic.persen}%;"></div>
-                        </div>
-                    </div>
+            dataDamaged.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+
+                let badgeStatus = '';
+                if (item.status === 'Selesai') badgeStatus = `<span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold">Diproses (Done)</span>`;
+                else badgeStatus = `<span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-bold">Pending (Dilaporkan)</span>`;
+
+                const fotoElement = item.foto 
+                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-milo-50 text-milo-800 px-2 py-1 rounded border border-milo-200">📷 Lihat Foto</button>`
+                    : `<span class="text-xs text-gray-400 italic">Tanpa Foto</span>`;
+
+                const isSupervisor = userAktif === 'Supervisor';
+                let aksi = isSupervisor && item.status === 'Pending'
+                    ? `<button onclick="prosesDamaged(${item.id})" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Diproses</button>`
+                    : `<span class="text-xs text-gray-400">Tercatat</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-xs">${item.tanggal}</td>
+                    <td class="py-3 px-4">${fotoElement}</td>
+                    <td class="py-3 px-4 font-bold text-gray-800">${item.nama}</td>
+                    <td class="py-3 px-4 font-bold text-red-600">${item.qty} ${item.satuan}</td>
+                    <td class="py-3 px-4 text-xs">${item.lokasi}</td>
+                    <td class="py-3 px-4 text-xs font-semibold">${item.pelapor}</td>
+                    <td class="py-3 px-4">${badgeStatus}</td>
+                    <td class="py-3 px-4 no-print">${aksi}</td>
                 `;
-                containerPic.appendChild(card);
+                tbody.appendChild(tr);
             });
         }
 
-        function setFilter(status) {
-            filterStatus = status;
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('border-blue-600', 'text-blue-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
-            document.getElementById(`tab-${status}`).classList.add('border-blue-600', 'text-blue-600');
-            document.getElementById(`tab-${status}`).classList.remove('border-transparent', 'text-gray-500');
-            renderTabel();
+        function bukaModalDamaged() {
+            document.getElementById('modal-damaged').classList.remove('hidden');
         }
 
-        function filterDanCari() {
-            renderTabel();
+        function tutupModalDamaged() {
+            document.getElementById('modal-damaged').classList.add('hidden');
+            document.getElementById('form-damaged').reset();
+            document.getElementById('container-preview-damaged').classList.add('hidden');
         }
 
-        function bukaModalTambah() {
-            document.getElementById('modal-tambah').classList.remove('hidden');
-        }
-
-        function tutupModalTambah() {
-            document.getElementById('modal-tambah').classList.add('hidden');
-            document.getElementById('form-tambah').reset();
-        }
-
-        function simpanJadwalBaru(event) {
-            event.preventDefault();
-            const zona = document.getElementById('add-zona').value;
-            const pic = document.getElementById('add-pic').value;
-            const waktu = document.getElementById('add-waktu').value;
-            const shift = document.getElementById('add-shift').value;
-
-            const newItem = {
-                id: Date.now(),
-                waktu,
-                shift,
-                zona,
-                pic,
-                foto: null,
-                status: 'Belum'
-            };
-
-            dataJadwal.push(newItem);
-            simpanKeStorage();
-            tutupModalTambah();
-            renderTabel();
-            renderStatistik();
-        }
-
-        function ubahStatus(id, newStatus) {
-            const item = dataJadwal.find(i => i.id === id);
-            if (item) {
-                item.status = newStatus;
-                simpanKeStorage();
-                renderTabel();
-                renderStatistik();
-            }
-        }
-
-        function hapusJadwal(id) {
-            if (confirm('Hapus jadwal ini?')) {
-                dataJadwal = dataJadwal.filter(i => i.id !== id);
-                simpanKeStorage();
-                renderTabel();
-                renderStatistik();
-            }
-        }
-
-        function bukaModalUpload(id) {
-            idAktif = id;
-            document.getElementById('input-foto').value = '';
-            document.getElementById('container-preview').classList.add('hidden');
-            document.getElementById('modal-upload').classList.remove('hidden');
-        }
-
-        function tutupModalUpload() {
-            document.getElementById('modal-upload').classList.add('hidden');
-        }
-
-        function previewFoto(event) {
+        function previewFotoDamaged(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    urlFotoSementara = e.target.result;
-                    document.getElementById('img-preview').src = urlFotoSementara;
-                    document.getElementById('container-preview').classList.remove('hidden');
+                    urlFotoDamagedSementara = e.target.result;
+                    document.getElementById('img-preview-damaged').src = urlFotoDamagedSementara;
+                    document.getElementById('container-preview-damaged').classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function simpanFotoSelesai() {
-            if (!document.getElementById('input-foto').files[0]) {
-                alert('Silakan pilih atau unggah foto bukti terlebih dahulu!');
+        function simpanDamagedBaru(event) {
+            event.preventDefault();
+            const nama = document.getElementById('damaged-nama').value;
+            const qty = parseInt(document.getElementById('damaged-qty').value);
+            const satuan = document.getElementById('damaged-satuan').value;
+            const lokasi = document.getElementById('damaged-lokasi').value;
+
+            const now = new Date();
+            const tglStr = now.toISOString().slice(0,10) + ' ' + now.toTimeString().slice(0,5);
+
+            const newItem = {
+                id: Date.now(),
+                tanggal: tglStr,
+                nama,
+                qty,
+                satuan,
+                lokasi,
+                pelapor: userAktif === 'Supervisor' ? 'Supervisor' : userAktif,
+                foto: urlFotoDamagedSementara,
+                status: 'Pending'
+            };
+
+            dataDamaged.unshift(newItem);
+            simpanKeStorage();
+            tutupModalDamaged();
+            renderDamaged();
+            renderStatistik();
+        }
+
+        function prosesDamaged(id) {
+            const item = dataDamaged.find(i => i.id === id);
+            if (item) {
+                item.status = 'Selesai';
+                simpanKeStorage();
+                renderDamaged();
+                renderStatistik();
+            }
+        }
+
+        function exportDamagedCSV() {
+            if (dataDamaged.length === 0) {
+                alert("Belum ada data barang damaged untuk diekspor!");
                 return;
             }
 
-            const item = dataJadwal.find(i => i.id === idAktif);
-            if (item) {
-                item.foto = urlFotoSementara;
-                item.status = 'Selesai';
-                simpanKeStorage();
-                renderTabel();
-                renderStatistik();
+            let csvContent = "data:text/csv;charset=utf-8,ID,Tanggal,Nama Produk,Qty Rusak,Satuan,Lokasi Area,Pelapor,Status\n";
+            dataDamaged.forEach(row => {
+                csvContent += `${row.id},"${row.tanggal}","${row.nama}",${row.qty},"${row.satuan}","${row.lokasi}","${row.pelapor}","${row.status}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Laporan_InniloAps_Damaged_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportKebersihanCSV() {
+            if (dataJadwal.length === 0) {
+                alert("Belum ada data kebersihan untuk diekspor!");
+                return;
             }
-            tutupModalUpload();
-        }
 
-        function lihatFoto(url) {
-            document.getElementById('img-full').src = url;
-            document.getElementById('modal-lihat').classList.remove('hidden');
-        }
-
-        function tutupModalLihat() {
-            document.getElementById('modal-lihat').classList.add('hidden');
-        }
-
-        function exportKeCSV() {
             let csvContent = "data:text/csv;charset=utf-8,ID,Waktu,Shift,Zona,PIC,Status\n";
             dataJadwal.forEach(row => {
                 csvContent += `${row.id},"${row.waktu}","${row.shift}","${row.zona}","${row.pic}","${row.status}"\n`;
             });
+
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Laporan_Kebersihan_Gudang_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute("download", `Laporan_InniloAps_Kebersihan_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        // RENDER JADWAL KEBERSIHAN
+        function renderTabel() {
+            const tbody = document.getElementById('tabel-jadwal');
+            tbody.innerHTML = '';
+
+            dataJadwal.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+
+                let badgeStatus = item.status === 'Selesai' 
+                    ? `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>`
+                    : `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Belum</span>`;
+
+                let fotoElement = item.foto 
+                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-milo-50 text-milo-800 px-2 py-1 rounded border border-milo-200">📷 Lihat Foto</button>`
+                    : `<span class="text-xs text-gray-400 italic">Belum Ada</span>`;
+
+                const isSupervisor = userAktif === 'Supervisor';
+                const bisaEdit = isSupervisor || item.pic === userAktif;
+
+                let aksi = bisaEdit && item.status !== 'Selesai'
+                    ? `<button onclick="bukaModalUpload(${item.id})" class="bg-milo-700 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Selesai</button>`
+                    : `<span class="text-xs text-gray-400">Tuntas ✅</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-xs"><strong>${item.waktu}</strong> (${item.shift})</td>
+                    <td class="py-3 px-4">${item.zona}</td>
+                    <td class="py-3 px-4 font-semibold">${item.pic}</td>
+                    <td class="py-3 px-4">${fotoElement}</td>
+                    <td class="py-3 px-4">${badgeStatus}</td>
+                    <td class="py-3 px-4 no-print">${aksi}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderStatistik() {
+            document.getElementById('stat-total').innerText = dataJadwal.length;
+            document.getElementById('stat-selesai').innerText = dataJadwal.filter(i => i.status === 'Selesai').length;
+            document.getElementById('stat-pending').innerText = dataJadwal.filter(i => i.status !== 'Selesai').length;
+
+            document.getElementById('stat-damaged-total').innerText = dataDamaged.length;
+            document.getElementById('stat-damaged-qty').innerText = dataDamaged.reduce((acc, curr) => acc + (curr.qty || 0), 0);
+            document.getElementById('stat-damaged-selesai').innerText = dataDamaged.filter(i => i.status === 'Selesai').length;
+        }
+
+        function bukaModalTambah() { document.getElementById('modal-tambah').classList.remove('hidden'); }
+        function tutupModalTambah() { document.getElementById('modal-tambah').classList.add('hidden'); }
+        function simpanJadwalBaru(e) {
+            e.preventDefault();
+            dataJadwal.push({
+                id: Date.now(),
+                waktu: document.getElementById('add-waktu').value,
+                shift: document.getElementById('add-shift').value,
+                zona: document.getElementById('add-zona').value,
+                pic: document.getElementById('add-pic').value,
+                foto: null, status: 'Belum'
+            });
+            simpanKeStorage(); tutupModalTambah(); renderTabel(); renderStatistik();
+        }
+
+        function bukaModalUpload(id) { idAktif = id; document.getElementById('modal-upload').classList.remove('hidden'); }
+        function tutupModalUpload() { document.getElementById('modal-upload').classList.add('hidden'); }
+        function previewFoto(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { urlFotoSementara = ev.target.result; document.getElementById('img-preview').src = urlFotoSementara; document.getElementById('container-preview').classList.remove('hidden'); };
+                reader.readAsDataURL(file);
+            }
+        }
+        function simpanFotoSelesai() {
+            const item = dataJadwal.find(i => i.id === idAktif);
+            if (item) { item.foto = urlFotoSementara; item.status = 'Selesai'; simpanKeStorage(); renderTabel(); renderStatistik(); }
+            tutupModalUpload();
+        }
+
+        function lihatFoto(url) { document.getElementById('img-full').src = url; document.getElementById('modal-lihat').classList.remove('hidden'); }
+        function tutupModalLihat() { document.getElementById('modal-lihat').classList.add('hidden'); }
+
+        function resetDataAwal() {
+            if (confirm('Apakah Anda yakin ingin mengembalikan data ke kondisi awal?')) {
+                dataJadwal = [...defaultJadwal];
+                dataDamaged = [...defaultDamaged];
+                dataOpname = [];
+                simpanKeStorage();
+                renderTabel();
+                renderDamaged();
+                renderOpname();
+                renderStatistik();
+            }
         }
     </script>
 </body>
