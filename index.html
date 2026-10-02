@@ -6,6 +6,10 @@
     <title>Innilo-Aps (Warehouse Report System)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (xlsx) CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -18,7 +22,6 @@
                             500: '#009A5B',
                             100: '#E6F4ED',
                             50: '#F0F9F4',
-                            accent: '#8B4513',
                             amber: '#D97706'
                         }
                     }
@@ -36,6 +39,43 @@
 </head>
 <body class="bg-milo-50 font-sans min-h-screen pb-12 text-gray-800">
 
+    <!-- MODAL SCREEN LOGIN PENGGUNA -->
+    <div id="modal-login-screen" class="fixed inset-0 bg-milo-800/90 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl border-t-8 border-amber-600 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-block bg-milo-100 p-3 rounded-full text-3xl">🏭</div>
+                <h2 class="text-xl md:text-2xl font-black text-milo-800">Innilo-Aps</h2>
+                <p class="text-xs text-gray-500">Warehouse Report System — Masuk ke Akun Anda</p>
+            </div>
+
+            <form onsubmit="prosesLogin(event)" class="space-y-4">
+                <div id="login-error-msg" class="hidden bg-red-100 border-l-4 border-red-600 text-red-700 p-3 rounded text-xs font-semibold">
+                    Username atau password yang Anda masukkan salah!
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-milo-800 uppercase mb-1">Username *</label>
+                    <input type="text" id="login-username" required placeholder="Masukkan username" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-milo-800 uppercase mb-1">Password *</label>
+                    <input type="password" id="login-password" required placeholder="Masukkan password" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-milo-600 outline-none">
+                </div>
+
+                <button type="submit" class="w-full bg-milo-700 hover:bg-milo-800 text-white font-bold py-3 rounded-xl text-xs shadow-md transition">
+                    MASUK KEPADA SISTEM 🚀
+                </button>
+            </form>
+
+            <div class="bg-milo-50 p-3 rounded-xl border border-milo-200 text-[11px] text-milo-800 space-y-1">
+                <p class="font-bold">🔑 Bantuan Akun Login Default:</p>
+                <p>• <strong>Manajemen:</strong> `supervisor`, `dcmanager`, `logistics`, `headwh` | Pass: `admin123`</p>
+                <p>• <strong>Staf Gudang:</strong> Username `[nama_depan]` (contoh: `agus`, `aldy`, `bobby`) | Pass: `123456`</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Topbar Navigasi Utama -->
     <nav class="bg-milo-800 text-white px-4 md:px-6 py-3.5 shadow-md flex flex-wrap justify-between items-center gap-3 no-print border-b-2 border-amber-600">
         <div class="flex items-center space-x-3">
@@ -46,34 +86,14 @@
             </div>
         </div>
 
-        <!-- Pilihan Peran Pengguna (Role Switcher) -->
-        <div class="flex items-center space-x-2 bg-milo-800/80 p-1.5 rounded-xl border border-milo-600">
-            <span class="text-xs text-milo-100 font-medium pl-2 hidden sm:inline">Pengguna:</span>
-            <select id="user-role-select" onchange="gantiPengguna(this.value)" class="bg-milo-700 text-white text-xs font-semibold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer border border-milo-500">
-                <optgroup label="Pengawas">
-                    <option value="Supervisor" selected>👑 Supervisor (Akses Penuh)</option>
-                </optgroup>
-                <optgroup label="Staf Kebersihan / Gudang">
-                    <option value="Agus Suwandani">👤 Agus Suwandani</option>
-                    <option value="Aldy Surya Pratama">👤 Aldy Surya Pratama</option>
-                    <option value="Andri Sembiring">👤 Andri Sembiring</option>
-                    <option value="Bobby Disani">👤 Bobby Disani</option>
-                    <option value="Brema Purba">👤 Brema Purba</option>
-                    <option value="Dermawan">👤 Dermawan</option>
-                    <option value="Frans Joy Temanta">👤 Frans Joy Temanta</option>
-                    <option value="Irfansyah">👤 Irfansyah</option>
-                    <option value="Jaka Nugraha">👤 Jaka Nugraha</option>
-                    <option value="Miko Hermansyag">👤 Miko Hermansyag</option>
-                    <option value="Muhammad Edo">👤 Muhammad Edo</option>
-                    <option value="Nanda Al Hafids">👤 Nanda Al Hafids</option>
-                    <option value="Nico Atmaja">👤 Nico Atmaja</option>
-                    <option value="Riski Dermawan">👤 Riski Dermawan</option>
-                    <option value="Satrya Karyanta">👤 Satrya Karyanta</option>
-                    <option value="Sudybyo Widodo">👤 Sudybyo Widodo</option>
-                    <option value="Wahyu Agustian">👤 Wahyu Agustian</option>
-                    <option value="Yogi Karnisa">👤 Yogi Karnisa</option>
-                </optgroup>
-            </select>
+        <div class="flex items-center space-x-3 bg-milo-800/80 p-1.5 px-3 rounded-xl border border-milo-600">
+            <div class="text-xs text-right">
+                <div class="font-bold text-white" id="user-display-name">Supervisor</div>
+                <div class="text-[10px] text-milo-100" id="user-display-role">👑 Supervisor</div>
+            </div>
+            <button onclick="prosesLogout()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition shadow-sm">
+                🚪 Logout
+            </button>
         </div>
     </nav>
 
@@ -88,7 +108,10 @@
                 <span>⚠️</span>
                 <span>Pendataan Barang Damaged</span>
             </button>
-            <!-- Menu Khusus Supervisor -->
+            <button onclick="pindahMenu('expired')" id="nav-expired" class="menu-nav-btn px-4 py-3 border-b-4 border-transparent text-milo-100 hover:text-white flex items-center gap-2">
+                <span>⏳</span>
+                <span>Opname Expired (Food)</span>
+            </button>
             <button onclick="pindahMenu('opname')" id="nav-opname" class="role-supervisor menu-nav-btn px-4 py-3 border-b-4 border-transparent text-milo-100 hover:text-white flex items-center gap-2">
                 <span>📊</span>
                 <span>Report Hasil Opname Daily</span>
@@ -112,8 +135,6 @@
 
     <!-- ================= HALAMAN 1: JADWAL KEBERSIHAN ================= -->
     <div id="page-kebersihan" class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
-        
-        <!-- Stat Kebersihan -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-milo-600 flex justify-between items-center">
                 <div>
@@ -149,13 +170,11 @@
             </div>
         </div>
 
-        <!-- Leaderboard PIC Kebersihan -->
         <div class="bg-white rounded-xl shadow-sm p-5 border border-milo-100">
             <h2 class="text-base font-bold text-milo-800 mb-3">🏆 Leaderboard Performa Kebersihan (PIC)</h2>
             <div id="container-pic" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <!-- Tabel Jadwal Kebersihan -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-milo-100">
             <div class="p-4 border-b border-milo-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 class="text-lg font-bold text-milo-800">Jadwal Kebersihan Gudang Hari Ini</h2>
@@ -188,9 +207,9 @@
 
     <!-- ================= HALAMAN 2: DATA BARANG DAMAGED ================= -->
     <div id="page-damaged" class="hidden max-w-6xl mx-auto p-4 md:p-6 space-y-6">
-        
-        <!-- Stat Barang Damaged -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div id="container-alerts-damaged" class="space-y-2"></div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex justify-between items-center">
                 <div>
                     <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Laporan Damaged</span>
@@ -204,10 +223,10 @@
 
             <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between items-center">
                 <div>
-                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Produk Rusak (Qty)</span>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Qty Rusak</span>
                     <div class="mt-1 flex items-baseline gap-2">
                         <span id="stat-damaged-qty" class="text-3xl font-extrabold text-red-600">0</span>
-                        <span class="text-sm font-semibold text-gray-500">Pcs/Box</span>
+                        <span class="text-sm font-semibold text-gray-500">Items</span>
                     </div>
                 </div>
                 <div class="bg-red-50 p-3 rounded-full text-red-600 text-xl">⚠️</div>
@@ -215,32 +234,63 @@
 
             <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-milo-600 flex justify-between items-center">
                 <div>
-                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Selesai Diproses</span>
-                    <div class="mt-1 flex items-baseline gap-2">
-                        <span id="stat-damaged-selesai" class="text-3xl font-extrabold text-milo-700">0</span>
-                        <span class="text-sm font-semibold text-gray-500">Item</span>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Food vs Non Food</span>
+                    <div class="mt-1 flex items-baseline gap-1 text-xs font-bold text-gray-700">
+                        <span id="stat-damaged-food" class="text-amber-700">Food: 0</span> | 
+                        <span id="stat-damaged-nonfood" class="text-blue-700">Non: 0</span>
                     </div>
                 </div>
-                <div class="bg-milo-50 p-3 rounded-full text-milo-700 text-xl">✅</div>
+                <div class="bg-milo-50 p-3 rounded-full text-milo-700 text-xl">🍔</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-purple-600 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Top Damaged Product</span>
+                    <div class="mt-1 font-bold text-xs text-purple-900 truncate max-w-[140px]" id="stat-damaged-top-name">-</div>
+                    <span class="text-[10px] text-purple-600 font-semibold" id="stat-damaged-top-qty">0 Qty</span>
+                </div>
+                <div class="bg-purple-50 p-3 rounded-full text-purple-600 text-xl">🔥</div>
             </div>
         </div>
 
-        <!-- Tabel & Header Laporan Barang Damaged -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-milo-100 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-bold text-milo-800 uppercase tracking-wider mb-1">Rasio Kategori Damaged</h3>
+                    <p class="text-[11px] text-gray-400 mb-4">Perbandingan persentase Food vs Non Food</p>
+                </div>
+                <div class="relative max-h-52 flex justify-center items-center py-2">
+                    <canvas id="chartKategori"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-milo-100 lg:col-span-2 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-bold text-milo-800 uppercase tracking-wider mb-1">5 Produk Damaged Tertinggi (Qty)</h3>
+                    <p class="text-[11px] text-gray-400 mb-4">Produk dengan tingkat kerusakan terbanyak di gudang</p>
+                </div>
+                <div class="relative max-h-52">
+                    <canvas id="chartTopProducts"></canvas>
+                </div>
+            </div>
+        </div>
+
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-milo-100">
             <div class="p-4 md:p-5 border-b border-milo-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 class="text-lg font-bold text-milo-800">Pendataan Barang Damaged / Rusak</h2>
-                    <p class="text-xs text-gray-500">Dokumentasikan foto, jumlah Qty, dan deskripsi kerusakan produk di gudang</p>
+                    <p class="text-xs text-gray-500">Dokumentasikan foto, Kategori (Food/Non Food), Mat ID, Qty, dan deskripsi kerusakan produk</p>
                 </div>
 
-                <div class="flex items-center gap-2 no-print">
+                <div class="flex flex-wrap items-center gap-2 no-print">
+                    <button onclick="exportDamagedExcel()" class="bg-green-700 hover:bg-green-800 text-white font-semibold px-3 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                        <span>📗</span><span>Ekspor Excel (.xlsx)</span>
+                    </button>
                     <button onclick="exportDamagedCSV()" class="bg-milo-700 hover:bg-milo-800 text-white font-semibold px-3 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
-                        <span>📊</span>
-                        <span>Ekspor CSV</span>
+                        <span>📊</span><span>Ekspor CSV</span>
                     </button>
                     <button onclick="bukaModalDamaged()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
-                        <span>📷 +</span>
-                        <span>Laporkan Barang Damaged</span>
+                        <span>📷 +</span><span>Laporkan Barang Damaged</span>
                     </button>
                 </div>
             </div>
@@ -249,38 +299,149 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-milo-100 text-milo-800 text-xs uppercase font-semibold tracking-wider">
-                            <th class="py-3 px-4">Tanggal & Waktu</th>
-                            <th class="py-3 px-4">Foto Bukti</th>
-                            <th class="py-3 px-4">Nama / Deskripsi Produk</th>
+                            <th class="py-3 px-4">Tanggal</th>
+                            <th class="py-3 px-4">Foto</th>
+                            <th class="py-3 px-4">Kategori</th>
+                            <th class="py-3 px-4">Mat ID</th>
+                            <th class="py-3 px-4">Nama Produk / Deskripsi</th>
                             <th class="py-3 px-4">Qty Rusak</th>
-                            <th class="py-3 px-4">Lokasi Area</th>
-                            <th class="py-3 px-4">Pelapor (Staf)</th>
+                            <th class="py-3 px-4">Lokasi</th>
+                            <th class="py-3 px-4">Pelapor</th>
                             <th class="py-3 px-4">Status</th>
                             <th class="py-3 px-4 no-print">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="tabel-damaged" class="divide-y divide-milo-100 text-sm font-medium text-gray-700">
-                        <!-- Data Damaged di-render lewat JS -->
-                    </tbody>
+                    <tbody id="tabel-damaged" class="divide-y divide-milo-100 text-sm font-medium text-gray-700"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- ================= HALAMAN 3: REPORT HASIL OPNAME DAILY (KHUSUS SUPERVISOR) ================= -->
+    <!-- ================= HALAMAN 3: OPNAME EXPIRED ================= -->
+    <div id="page-expired" class="hidden max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        <div id="container-alerts-expired" class="space-y-2"></div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-600 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Sudah Kedaluwarsa</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-exp-already" class="text-3xl font-extrabold text-red-600">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Items</span>
+                    </div>
+                </div>
+                <div class="bg-red-50 p-3 rounded-full text-red-600 text-xl">☣️</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-amber-500 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Mendekati ED (≤30 Hari)</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-exp-near" class="text-3xl font-extrabold text-amber-600">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Items</span>
+                    </div>
+                </div>
+                <div class="bg-amber-50 p-3 rounded-full text-amber-600 text-xl">⚠</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-milo-600 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">Total Items Food Laporan</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span id="stat-exp-total" class="text-3xl font-extrabold text-milo-700">0</span>
+                        <span class="text-sm font-semibold text-gray-500">Laporan</span>
+                    </div>
+                </div>
+                <div class="bg-milo-50 p-3 rounded-full text-milo-700 text-xl">🍔</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-700 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-500 font-medium text-xs uppercase tracking-wider">ED Terdekat</span>
+                    <div class="mt-1 font-bold text-xs text-red-900 truncate max-w-[140px]" id="stat-exp-nearest-name">-</div>
+                    <span class="text-[10px] text-red-600 font-bold" id="stat-exp-nearest-date">Tgl: -</span>
+                </div>
+                <div class="bg-red-50 p-3 rounded-full text-red-600 text-xl">🚨</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-milo-100 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-bold text-milo-800 uppercase tracking-wider mb-1">Status Masa Kedaluwarsa</h3>
+                    <p class="text-[11px] text-gray-400 mb-4">Kondisi ED produk Food terdaftar</p>
+                </div>
+                <div class="relative max-h-52 flex justify-center items-center py-2">
+                    <canvas id="chartExpiredStatus"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-milo-100 lg:col-span-2 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs font-bold text-milo-800 uppercase tracking-wider mb-1">Top 5 Produk Food Kedaluwarsa (Qty)</h3>
+                    <p class="text-[11px] text-gray-400 mb-4">Produk Food dengan jumlah kuantitas ED terbanyak</p>
+                </div>
+                <div class="relative max-h-52">
+                    <canvas id="chartTopExpired"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-milo-100">
+            <div class="p-4 md:p-5 border-b border-milo-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-milo-800 flex items-center gap-2">
+                        <span>🍔</span><span>Laporan Opname Expired (Khusus Food)</span>
+                    </h2>
+                    <p class="text-xs text-gray-500">Pendataan tanggal kedaluwarsa produk makanan, Mat ID, lokasi rak, dan jumlah Qty</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 no-print">
+                    <button onclick="exportExpiredExcel()" class="bg-green-700 hover:bg-green-800 text-white font-semibold px-3 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                        <span>📗</span><span>Ekspor Excel (.xlsx)</span>
+                    </button>
+                    <button onclick="exportExpiredCSV()" class="bg-milo-700 hover:bg-milo-800 text-white font-semibold px-3 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                        <span>📊</span><span>Ekspor CSV</span>
+                    </button>
+                    <button onclick="bukaModalExpired()" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
+                        <span>⏳ +</span><span>Input Opname Expired</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-milo-100 text-milo-800 text-xs uppercase font-semibold tracking-wider">
+                            <th class="py-3 px-4">Tanggal Lapor</th>
+                            <th class="py-3 px-4">Tanggal Expired (ED)</th>
+                            <th class="py-3 px-4">Status ED</th>
+                            <th class="py-3 px-4">Mat ID</th>
+                            <th class="py-3 px-4">Nama Produk Food</th>
+                            <th class="py-3 px-4">Qty</th>
+                            <th class="py-3 px-4">Lokasi</th>
+                            <th class="py-3 px-4">Pelapor</th>
+                            <th class="py-3 px-4">Foto</th>
+                            <th class="py-3 px-4 no-print">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-expired" class="divide-y divide-milo-100 text-sm font-medium text-gray-700"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HALAMAN 4: REPORT OPNAME DAILY ================= -->
     <div id="page-opname" class="hidden max-w-6xl mx-auto p-4 md:p-6 space-y-6">
-        
-        <!-- Header & Form Upload Excel Opname -->
         <div class="bg-white rounded-xl shadow-sm p-6 border border-milo-100 space-y-4">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4 border-milo-100">
                 <div>
                     <h2 class="text-lg font-bold text-milo-800 flex items-center gap-2">
-                        <span>📊</span>
-                        <span>Upload & Pengelolaan Report Opname Daily</span>
+                        <span>📊</span><span>Upload & Pengelolaan Report Opname Daily</span>
                     </h2>
                     <p class="text-xs text-gray-500">Unggah berkas laporan Excel (.xlsx / .xls / .csv) hasil opname harian untuk diarsipkan dan diunduh di masa mendatang.</p>
                 </div>
-                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">🔒 Akses Khusus Supervisor</span>
+                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">🔒 Akses Khusus Supervisor / Manajemen</span>
             </div>
 
             <form id="form-opname" onsubmit="simpanOpnameDaily(event)" class="space-y-4 bg-milo-50/60 p-4 rounded-xl border border-milo-200">
@@ -298,19 +459,16 @@
                 <div>
                     <label class="block text-xs font-semibold text-milo-800 mb-1">Pilih File Excel / Spreadsheet (.xlsx, .xls, .csv) *</label>
                     <input type="file" id="opname-file" accept=".xlsx, .xls, .csv" required class="w-full text-xs text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-milo-700 file:text-white hover:file:bg-milo-800 cursor-pointer">
-                    <p class="text-[10px] text-gray-400 mt-1">*File akan diunggah dan tersimpan aman di aplikasi untuk dapat di-download kembali kapan saja.</p>
                 </div>
 
                 <div class="flex justify-end pt-2">
                     <button type="submit" class="bg-milo-700 hover:bg-milo-800 text-white font-bold px-5 py-2.5 rounded-lg text-xs shadow-sm transition flex items-center gap-1.5">
-                        <span>📥</span>
-                        <span>Unggah Laporan Opname</span>
+                        <span>📥</span><span>Unggah Laporan Opname</span>
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Tabel Daftar Berkas Opname Daily yang Tersimpan -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-milo-100">
             <div class="p-4 border-b border-milo-100 flex justify-between items-center bg-white">
                 <h3 class="text-sm font-bold text-milo-800">Daftar Berkas Opname Daily Tersimpan</h3>
@@ -322,32 +480,115 @@
                     <thead>
                         <tr class="bg-milo-100 text-milo-800 text-xs uppercase font-semibold">
                             <th class="py-3 px-4">Tanggal Opname</th>
-                            <th class="py-3 px-4">Judul / Deskripsi Laporan</th>
+                            <th class="py-3 px-4">Judul Laporan</th>
                             <th class="py-3 px-4">Nama File Berkas</th>
                             <th class="py-3 px-4">Ukuran File</th>
                             <th class="py-3 px-4">Waktu Unggah</th>
                             <th class="py-3 px-4 no-print">Aksi / Download</th>
                         </tr>
                     </thead>
-                    <tbody id="tabel-opname" class="divide-y divide-milo-100 text-sm font-medium text-gray-700">
-                        <!-- Data Opname di-render lewat JS -->
-                    </tbody>
+                    <tbody id="tabel-opname" class="divide-y divide-milo-100 text-sm font-medium text-gray-700"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAL POPUP: DOKUMENTASI BARANG DAMAGED BARU -->
-    <div id="modal-damaged" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print">
-        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4 border-t-4 border-amber-600">
+    <!-- MODAL POPUP: DOKUMENTASI OPNAME EXPIRED -->
+    <div id="modal-expired" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print overflow-y-auto">
+        <div class="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl space-y-4 border-t-4 border-red-600 my-8">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-base font-bold text-gray-800">Form Laporan Barang Damaged</h3>
+                <div>
+                    <h3 class="text-base font-bold text-gray-800">Form Laporan Opname Expired (Food Only)</h3>
+                    <p class="text-[11px] text-gray-500">Isi tanggal, bulan, dan tahun kedaluwarsa produk makanan di gudang</p>
+                </div>
+                <button onclick="tutupModalExpired()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            
+            <form id="form-expired" onsubmit="simpanExpiredBaru(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Ambil / Unggah Foto Bukti Expired/Produk *</label>
+                    <input type="file" id="expired-foto" accept="image/*" capture="environment" onchange="previewFotoExpired(event)" required class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-800 hover:file:bg-red-100 cursor-pointer">
+                </div>
+
+                <div id="container-preview-expired" class="hidden border rounded-lg p-2 bg-red-50/50 text-center">
+                    <img id="img-preview-expired" src="" class="max-h-36 mx-auto rounded shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Area / Rak Gudang *</label>
+                    <input type="text" id="expired-lokasi" required placeholder="Contoh: Rak Food A-01 / Area Chiller Staging" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-red-500 outline-none">
+                </div>
+
+                <div class="border-t pt-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-bold text-red-800 uppercase tracking-wider">Daftar Produk Food Expired (Multi-Item)</label>
+                        <button type="button" onclick="tambahBarisProdukExpired()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1 rounded-lg flex items-center gap-1 transition shadow-sm">
+                            <span>+</span><span>Tambah Produk Food Lain</span>
+                        </button>
+                    </div>
+
+                    <div id="container-items-expired" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                        <div class="item-expired-row bg-red-50/40 p-3 rounded-lg border border-red-200 relative space-y-2">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Kategori</label>
+                                    <input type="text" value="Food 🍔" disabled class="w-full bg-gray-100 border rounded p-1.5 text-xs font-bold text-amber-800">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Mat ID Produk *</label>
+                                    <input type="text" class="exp-matid w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: MAT-90021">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Nama Produk Food *</label>
+                                    <input type="text" class="exp-nama w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: Milo Sachet 1Kg">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-red-800">Tanggal Expired (ED) *</label>
+                                    <input type="date" class="exp-date w-full border border-red-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none font-bold" required>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Qty Expired *</label>
+                                    <input type="number" min="1" class="exp-qty w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: 10">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Satuan *</label>
+                                    <select class="exp-satuan w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none">
+                                        <option value="Pcs">Pcs</option>
+                                        <option value="Box / Karton">Box / Karton</option>
+                                        <option value="Master Carton">Master Carton</option>
+                                        <option value="Pallet">Pallet</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="tutupModalExpired()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 shadow-sm">Kirim Laporan Expired</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: DOKUMENTASI BARANG DAMAGED BARU -->
+    <div id="modal-damaged" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 no-print overflow-y-auto">
+        <div class="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl space-y-4 border-t-4 border-amber-600 my-8">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 class="text-base font-bold text-gray-800">Form Laporan Barang Damaged</h3>
+                    <p class="text-[11px] text-gray-500">Gunakan fitur ini untuk melaporkan 1 atau beberapa barang damaged sekaligus</p>
+                </div>
                 <button onclick="tutupModalDamaged()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
             </div>
             
-            <form id="form-damaged" onsubmit="simpanDamagedBaru(event)" class="space-y-3">
+            <form id="form-damaged" onsubmit="simpanDamagedBaru(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Ambil / Unggah Foto Bukti *</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Ambil / Unggah Foto Bukti Kerusakan *</label>
                     <input type="file" id="damaged-foto" accept="image/*" capture="environment" onchange="previewFotoDamaged(event)" required class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-800 hover:file:bg-amber-100 cursor-pointer">
                 </div>
 
@@ -356,34 +597,60 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama / Deskripsi Produk *</label>
-                    <input type="text" id="damaged-nama" required placeholder="Contoh: Karton Indomie Rasa Soto (Bocor)" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Area / Rak Gudang *</label>
+                    <input type="text" id="damaged-lokasi" required placeholder="Contoh: Rak B-03 / Area Staging Loading Dock" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Jumlah (Qty Rusak) *</label>
-                        <input type="number" id="damaged-qty" min="1" required placeholder="Contoh: 5" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                <div class="border-t pt-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-bold text-milo-800 uppercase tracking-wider">Daftar Produk Rusak (Multi-Item)</label>
+                        <button type="button" onclick="tambahBarisProduk()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1 rounded-lg flex items-center gap-1 transition shadow-sm">
+                            <span>+</span><span>Tambah Produk Lain</span>
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Satuan</label>
-                        <select id="damaged-satuan" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
-                            <option value="Pcs">Pcs</option>
-                            <option value="Box / Karton">Box / Karton</option>
-                            <option value="Karton / Master Carton">Karton / Master Carton</option>
-                            <option value="Pallet">Pallet</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Area / Rak *</label>
-                    <input type="text" id="damaged-lokasi" required placeholder="Contoh: Rak B-03 / Loading Dock" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                    <div id="container-items-damaged" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                        <div class="item-damaged-row bg-milo-50/70 p-3 rounded-lg border border-milo-200 relative space-y-2">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Kategori *</label>
+                                    <select class="item-kategori w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none">
+                                        <option value="Food">Food 🍔</option>
+                                        <option value="Non Food">Non Food 📦</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Mat ID Produk *</label>
+                                    <input type="text" class="item-matid w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: MAT-88231">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Nama / Deskripsi Produk *</label>
+                                    <input type="text" class="item-nama w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: Milo 3-in-1 Sachet 1Kg">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Qty Rusak *</label>
+                                    <input type="number" min="1" class="item-qty w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: 5">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-gray-700">Satuan *</label>
+                                    <select class="item-satuan w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none">
+                                        <option value="Pcs">Pcs</option>
+                                        <option value="Box / Karton">Box / Karton</option>
+                                        <option value="Master Carton">Master Carton</option>
+                                        <option value="Pallet">Pallet</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex justify-end space-x-2 pt-3 border-t">
                     <button type="button" onclick="tutupModalDamaged()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 shadow-sm">Kirim Laporan</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 shadow-sm">Kirim Laporan Damaged</button>
                 </div>
             </form>
         </div>
@@ -476,90 +743,190 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIKA HTML/JS -->
+    <!-- SCRIPT LOGIKA HTML/JS TERBEBAS EROR -->
     <script>
-        // Data Default Kebersihan
+        // DATABASE AKUN LOGIN (SUPERVISOR & MANAJEMEN BARU + 18 STAF)
+        const userDatabase = {
+            'supervisor': { password: 'admin123', name: 'Supervisor Gudang', role: 'Supervisor' },
+            'dcmanager': { password: 'admin123', name: 'DC Manager', role: 'Supervisor' },
+            'logistics': { password: 'admin123', name: 'Logistic Manager', role: 'Supervisor' },
+            'headwh': { password: 'admin123', name: 'Head Warehouse', role: 'Supervisor' },
+            'agus': { password: '123456', name: 'Agus Suwandani', role: 'Staf Kebersihan / Gudang' },
+            'aldy': { password: '123456', name: 'Aldy Surya Pratama', role: 'Staf Kebersihan / Gudang' },
+            'andri': { password: '123456', name: 'Andri Sembiring', role: 'Staf Kebersihan / Gudang' },
+            'bobby': { password: '123456', name: 'Bobby Disani', role: 'Staf Kebersihan / Gudang' },
+            'brema': { password: '123456', name: 'Brema Purba', role: 'Staf Kebersihan / Gudang' },
+            'dermawan': { password: '123456', name: 'Dermawan', role: 'Staf Kebersihan / Gudang' },
+            'frans': { password: '123456', name: 'Frans Joy Temanta', role: 'Staf Kebersihan / Gudang' },
+            'irfansyah': { password: '123456', name: 'Irfansyah', role: 'Staf Kebersihan / Gudang' },
+            'jaka': { password: '123456', name: 'Jaka Nugraha', role: 'Staf Kebersihan / Gudang' },
+            'miko': { password: '123456', name: 'Miko Hermansyag', role: 'Staf Kebersihan / Gudang' },
+            'edo': { password: '123456', name: 'Muhammad Edo', role: 'Staf Kebersihan / Gudang' },
+            'nanda': { password: '123456', name: 'Nanda Al Hafids', role: 'Staf Kebersihan / Gudang' },
+            'nico': { password: '123456', name: 'Nico Atmaja', role: 'Staf Kebersihan / Gudang' },
+            'riski': { password: '123456', name: 'Riski Dermawan', role: 'Staf Kebersihan / Gudang' },
+            'satrya': { password: '123456', name: 'Satrya Karyanta', role: 'Staf Kebersihan / Gudang' },
+            'sudybyo': { password: '123456', name: 'Sudybyo Widodo', role: 'Staf Kebersihan / Gudang' },
+            'wahyu': { password: '123456', name: 'Wahyu Agustian', role: 'Staf Kebersihan / Gudang' },
+            'yogi': { password: '123456', name: 'Yogi Karnisa', role: 'Staf Kebersihan / Gudang' }
+        };
+
         const defaultJadwal = [
             { id: 1, waktu: '08:00 - 09:00', shift: 'Shift 1', zona: 'Zona A - Loading Dock', pic: 'Aldy Surya Pratama', foto: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400', status: 'Selesai' },
             { id: 2, waktu: '09:30 - 10:30', shift: 'Shift 1', zona: 'Zona B - Lorong Rak 1-5', pic: 'Bobby Disani', foto: null, status: 'Proses' }
         ];
 
-        // Data Default Damaged Goods
         const defaultDamaged = [
-            { id: 101, tanggal: '2026-10-01 09:15', nama: 'Karton Indomie Rasa Soto (Bocor)', qty: 3, satuan: 'Box / Karton', lokasi: 'Rak B-02', pelapor: 'Bobby Disani', foto: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400', status: 'Pending' }
+            { id: 101, tanggal: '2026-10-01 09:15', kategori: 'Non Food', matId: '-', nama: 'Karton Indomie Rasa Soto (Bocor)', qty: 3, satuan: 'Box / Karton', lokasi: 'Rak B-02', pelapor: 'Bobby Disani', foto: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400', status: 'Pending' },
+            { id: 102, tanggal: '2026-10-01 11:30', kategori: 'Food', matId: 'MAT-90021', nama: 'Milo 3-in-1 Sachet 1Kg (Bocor)', qty: 12, satuan: 'Box / Karton', lokasi: 'Area Staging A', pelapor: 'Aldy Surya Pratama', foto: null, status: 'Pending' }
         ];
 
-        // Data Default Opname Daily
+        const defaultExpired = [
+            { id: 201, tanggal: '2026-10-01 10:00', expDate: '2026-09-15', matId: 'MAT-90021', nama: 'Milo Powder 1Kg', qty: 15, satuan: 'Pcs', lokasi: 'Chiller B-01', pelapor: 'Bobby Disani', foto: null, status: 'Pending' },
+            { id: 202, tanggal: '2026-10-02 08:30', expDate: '2026-10-20', matId: 'MAT-33100', nama: 'Susu UHT Cokelat 250ml', qty: 8, satuan: 'Box / Karton', lokasi: 'Rak Food C-04', pelapor: 'Irfansyah', foto: null, status: 'Pending' }
+        ];
+
         const defaultOpname = [];
 
+        let currentAuthUser = JSON.parse(localStorage.getItem('innilo_auth')) || null;
         let dataJadwal = JSON.parse(localStorage.getItem('innilo_data')) || defaultJadwal;
         let dataDamaged = JSON.parse(localStorage.getItem('innilo_damaged')) || defaultDamaged;
+        let dataExpired = JSON.parse(localStorage.getItem('innilo_expired')) || defaultExpired;
         let dataOpname = JSON.parse(localStorage.getItem('innilo_opname')) || defaultOpname;
         let userAktif = localStorage.getItem('innilo_user') || 'Supervisor';
 
         let idAktif = null;
         let urlFotoSementara = '';
         let urlFotoDamagedSementara = '';
+        let urlFotoExpiredSementara = '';
+
+        let chartKategoriInstance = null;
+        let chartTopProductsInstance = null;
+        let chartExpiredStatusInstance = null;
+        let chartTopExpiredInstance = null;
 
         function simpanKeStorage() {
             localStorage.setItem('innilo_data', JSON.stringify(dataJadwal));
             localStorage.setItem('innilo_damaged', JSON.stringify(dataDamaged));
+            localStorage.setItem('innilo_expired', JSON.stringify(dataExpired));
             localStorage.setItem('innilo_opname', JSON.stringify(dataOpname));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('user-role-select').value = userAktif;
-            
-            // Set default input tanggal hari ini untuk form opname
-            document.getElementById('opname-tanggal').value = new Date().toISOString().slice(0,10);
+            inisialisasiAksesSesi();
+            const inputTgl = document.getElementById('opname-tanggal');
+            if (inputTgl) inputTgl.value = new Date().toISOString().slice(0,10);
 
             updateTampilanPengguna();
             renderTabel();
             renderDamaged();
+            renderExpired();
             renderOpname();
             renderStatistik();
-            document.getElementById('print-date').innerText = new Date().toLocaleDateString('id-ID', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-            });
+
+            const pDate = document.getElementById('print-date');
+            if (pDate) {
+                pDate.innerText = new Date().toLocaleDateString('id-ID', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                });
+            }
         });
 
-        // Pindah Tab Menu
+        function inisialisasiAksesSesi() {
+            const screen = document.getElementById('modal-login-screen');
+            if (!currentAuthUser) {
+                if (screen) screen.classList.remove('hidden');
+            } else {
+                if (screen) screen.classList.add('hidden');
+                const displayName = document.getElementById('user-display-name');
+                const displayRole = document.getElementById('user-display-role');
+                if (displayName) displayName.innerText = currentAuthUser.name;
+                if (displayRole) displayRole.innerText = currentAuthUser.role === 'Supervisor' ? `👑 ${currentAuthUser.name}` : '👤 Staf Gudang';
+                
+                userAktif = currentAuthUser.role === 'Supervisor' ? 'Supervisor' : currentAuthUser.name;
+                localStorage.setItem('innilo_user', userAktif);
+            }
+        }
+
+        function prosesLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value.trim().toLowerCase();
+            const p = document.getElementById('login-password').value.trim();
+
+            if (userDatabase[u] && userDatabase[u].password === p) {
+                currentAuthUser = userDatabase[u];
+                localStorage.setItem('innilo_auth', JSON.stringify(currentAuthUser));
+                const errMsg = document.getElementById('login-error-msg');
+                if (errMsg) errMsg.classList.add('hidden');
+                
+                inisialisasiAksesSesi();
+                updateTampilanPengguna();
+                renderTabel();
+                renderDamaged();
+                renderExpired();
+                renderOpname();
+                renderStatistik();
+            } else {
+                const errMsg = document.getElementById('login-error-msg');
+                if (errMsg) errMsg.classList.remove('hidden');
+            }
+        }
+
+        function prosesLogout() {
+            if (confirm('Apakah Anda yakin ingin keluar/logout?')) {
+                localStorage.removeItem('innilo_auth');
+                currentAuthUser = null;
+                const screen = document.getElementById('modal-login-screen');
+                if (screen) screen.classList.remove('hidden');
+            }
+        }
+
+        function formatTanggalIndo(tglStr) {
+            if (!tglStr) return '-';
+            if (tglStr.includes('-')) {
+                const parts = tglStr.split(' ');
+                const dateParts = parts[0].split('-');
+                if (dateParts.length === 3) {
+                    return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${parts[1] || ''}`.trim();
+                }
+            }
+            return tglStr;
+        }
+
         function pindahMenu(menu) {
             document.querySelectorAll('.menu-nav-btn').forEach(btn => {
                 btn.classList.remove('border-amber-400', 'text-white');
                 btn.classList.add('border-transparent', 'text-milo-100');
             });
 
-            document.getElementById('page-kebersihan').classList.add('hidden');
-            document.getElementById('page-damaged').classList.add('hidden');
-            document.getElementById('page-opname').classList.add('hidden');
+            ['page-kebersihan', 'page-damaged', 'page-expired', 'page-opname'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
 
             if (menu === 'kebersihan') {
-                document.getElementById('nav-kebersihan').classList.add('border-amber-400', 'text-white');
-                document.getElementById('page-kebersihan').classList.remove('hidden');
+                const nav = document.getElementById('nav-kebersihan');
+                const page = document.getElementById('page-kebersihan');
+                if (nav) nav.classList.add('border-amber-400', 'text-white');
+                if (page) page.classList.remove('hidden');
             } else if (menu === 'damaged') {
-                document.getElementById('nav-damaged').classList.add('border-amber-400', 'text-white');
-                document.getElementById('page-damaged').classList.remove('hidden');
+                const nav = document.getElementById('nav-damaged');
+                const page = document.getElementById('page-damaged');
+                if (nav) nav.classList.add('border-amber-400', 'text-white');
+                if (page) page.classList.remove('hidden');
+                setTimeout(renderDashboardDamagedVisual, 100);
+            } else if (menu === 'expired') {
+                const nav = document.getElementById('nav-expired');
+                const page = document.getElementById('page-expired');
+                if (nav) nav.classList.add('border-amber-400', 'text-white');
+                if (page) page.classList.remove('hidden');
+                setTimeout(renderDashboardExpiredVisual, 100);
             } else if (menu === 'opname') {
-                document.getElementById('nav-opname').classList.add('border-amber-400', 'text-white');
-                document.getElementById('page-opname').classList.remove('hidden');
+                const nav = document.getElementById('nav-opname');
+                const page = document.getElementById('page-opname');
+                if (nav) nav.classList.add('border-amber-400', 'text-white');
+                if (page) page.classList.remove('hidden');
             }
-        }
-
-        function gantiPengguna(namaUser) {
-            userAktif = namaUser;
-            localStorage.setItem('innilo_user', userAktif);
-            
-            // Jika pindah ke Staf saat di menu opname, kembalikan ke menu kebersihan
-            if (userAktif !== 'Supervisor' && !document.getElementById('page-opname').classList.contains('hidden')) {
-                pindahMenu('kebersihan');
-            }
-
-            updateTampilanPengguna();
-            renderTabel();
-            renderDamaged();
-            renderOpname();
-            renderStatistik();
         }
 
         function updateTampilanPengguna() {
@@ -573,22 +940,809 @@
             const badgeRole = document.getElementById('badge-role-type');
 
             if (isSupervisor) {
-                bannerText.innerHTML = `Mode Pengguna: <strong>Supervisor</strong> (Melihat seluruh data, opname daily & verifikasi laporan)`;
-                badgeRole.innerText = 'Akses Penuh';
-                badgeRole.className = 'bg-milo-700 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase';
+                if (bannerText) bannerText.innerHTML = `Mode Pengguna: <strong>Supervisor / Manajemen</strong> (Akses Seluruh Data & Laporan)`;
+                if (badgeRole) {
+                    badgeRole.innerText = 'Akses Penuh';
+                    badgeRole.className = 'bg-milo-700 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase';
+                }
             } else {
-                bannerText.innerHTML = `Mode Staf: <strong>${userAktif}</strong> (Bisa laporkan barang damaged & kerjakan tugas)`;
-                badgeRole.innerText = 'Mode Staf / PIC';
-                badgeRole.className = 'bg-amber-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase';
+                if (bannerText) bannerText.innerHTML = `Mode Staf: <strong>${userAktif}</strong> (Bisa Laporkan Barang & Kebersihan)`;
+                if (badgeRole) {
+                    badgeRole.innerText = 'Mode Staf / PIC';
+                    badgeRole.className = 'bg-amber-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase';
+                }
             }
         }
 
-        // ================= LOGIKA OPNAME DAILY =================
+        // VISUAL EXPIRED FOOD
+        function renderDashboardExpiredVisual() {
+            const alertContainer = document.getElementById('container-alerts-expired');
+            if (!alertContainer) return;
+            alertContainer.innerHTML = '';
+
+            const today = new Date().toISOString().slice(0,10);
+            let alreadyCount = 0;
+            let nearCount = 0;
+            let nearestItem = null;
+
+            dataExpired.forEach(item => {
+                const ed = item.expDate;
+                if (ed) {
+                    const diffDays = Math.ceil((new Date(ed) - new Date(today)) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) alreadyCount += (item.qty || 0);
+                    else if (diffDays <= 30) nearCount += (item.qty || 0);
+
+                    if (!nearestItem || new Date(ed) < new Date(nearestItem.expDate)) {
+                        nearestItem = item;
+                    }
+                }
+            });
+
+            if (alreadyCount > 0) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'bg-red-100 border-l-4 border-red-600 text-red-900 p-3.5 rounded-lg text-xs flex justify-between items-center shadow-sm';
+                alertDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">☣️</span>
+                        <div><strong class="font-bold">PERINGATAN EXPIRED:</strong> Terdapat <strong>${alreadyCount} Qty Food</strong> yang <span class="font-extrabold underline">SUDAH KEDALUWARSA</span>!</div>
+                    </div>
+                `;
+                alertContainer.appendChild(alertDiv);
+            }
+
+            if (nearCount > 0) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'bg-amber-100 border-l-4 border-amber-600 text-amber-900 p-3.5 rounded-lg text-xs flex justify-between items-center shadow-sm';
+                alertDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⚠️</span>
+                        <div><strong class="font-bold">NEAR EXPIRED:</strong> Terdapat <strong>${nearCount} Qty Food</strong> ED ≤ 30 Hari. Utamakan FIFO!</div>
+                    </div>
+                `;
+                alertContainer.appendChild(alertDiv);
+            }
+
+            const elAlready = document.getElementById('stat-exp-already');
+            const elNear = document.getElementById('stat-exp-near');
+            const elTotal = document.getElementById('stat-exp-total');
+            if (elAlready) elAlready.innerText = alreadyCount;
+            if (elNear) elNear.innerText = nearCount;
+            if (elTotal) elTotal.innerText = dataExpired.length;
+
+            const elName = document.getElementById('stat-exp-nearest-name');
+            const elDate = document.getElementById('stat-exp-nearest-date');
+            if (nearestItem) {
+                if (elName) elName.innerText = nearestItem.nama;
+                if (elDate) elDate.innerText = `ED: ${formatTanggalIndo(nearestItem.expDate)}`;
+            } else {
+                if (elName) elName.innerText = '-';
+                if (elDate) elDate.innerText = 'Tgl: -';
+            }
+
+            const safeCount = Math.max(0, dataExpired.reduce((a,c) => a + (c.qty || 0), 0) - alreadyCount - nearCount);
+            const canvasStatus = document.getElementById('chartExpiredStatus');
+            if (canvasStatus) {
+                const ctxExpStatus = canvasStatus.getContext('2d');
+                if (chartExpiredStatusInstance) chartExpiredStatusInstance.destroy();
+                chartExpiredStatusInstance = new Chart(ctxExpStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Expired ☣️', 'Near ED (≤30 Hari) ⚠️', 'Aman ✅'],
+                        datasets: [{ data: [alreadyCount, nearCount, safeCount], backgroundColor: ['#DC2626', '#D97706', '#059669'], borderWidth: 2 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+                });
+            }
+
+            const expProductMap = {};
+            dataExpired.forEach(item => {
+                const key = `${item.nama} (${item.matId || '-'})`;
+                expProductMap[key] = (expProductMap[key] || 0) + (item.qty || 0);
+            });
+
+            const sortedExpProducts = Object.keys(expProductMap)
+                .map(k => ({ name: k, qty: expProductMap[k] }))
+                .sort((a, b) => b.qty - a.qty).slice(0, 5);
+
+            const canvasTop = document.getElementById('chartTopExpired');
+            if (canvasTop) {
+                const ctxTopExp = canvasTop.getContext('2d');
+                if (chartTopExpiredInstance) chartTopExpiredInstance.destroy();
+                chartTopExpiredInstance = new Chart(ctxTopExp, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedExpProducts.map(p => p.name.length > 20 ? p.name.slice(0,20) + '...' : p.name),
+                        datasets: [{ label: 'Total Qty ED', data: sortedExpProducts.map(p => p.qty), backgroundColor: '#DC2626', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { font: { size: 10 } } } } }
+                });
+            }
+        }
+
+        function renderExpired() {
+            const tbody = document.getElementById('tabel-expired');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (dataExpired.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-gray-400 text-xs">Belum ada laporan Opname Expired (Food).</td></tr>`;
+                renderDashboardExpiredVisual();
+                return;
+            }
+
+            const today = new Date().toISOString().slice(0,10);
+
+            dataExpired.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+
+                let badgeED = '';
+                if (item.expDate) {
+                    const diffDays = Math.ceil((new Date(item.expDate) - new Date(today)) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) badgeED = `<span class="bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded text-[10px] font-bold">KEDALUWARSA ☣️</span>`;
+                    else if (diffDays <= 30) badgeED = `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded text-[10px] font-bold">Near ED (${diffDays} Hari) ⚠️</span>`;
+                    else badgeED = `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">Aman ✅</span>`;
+                }
+
+                const fotoElement = item.foto 
+                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-red-50 text-red-800 px-2 py-1 rounded border border-red-200">📷 Lihat Foto</button>`
+                    : `<span class="text-xs text-gray-400 italic">Tanpa Foto</span>`;
+
+                const isSupervisor = userAktif === 'Supervisor';
+                let aksi = isSupervisor && item.status === 'Pending'
+                    ? `<button onclick="prosesExpired(${item.id})" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Proses ED</button>`
+                    : `<span class="text-xs text-gray-400">Tercatat</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-xs">${formatTanggalIndo(item.tanggal)}</td>
+                    <td class="py-3 px-4 text-xs font-bold text-red-700">${formatTanggalIndo(item.expDate)}</td>
+                    <td class="py-3 px-4">${badgeED}</td>
+                    <td class="py-3 px-4 text-xs font-mono font-bold text-milo-800">${item.matId || '-'}</td>
+                    <td class="py-3 px-4 font-bold text-gray-800">${item.nama}</td>
+                    <td class="py-3 px-4 font-bold text-red-600">${item.qty} ${item.satuan}</td>
+                    <td class="py-3 px-4 text-xs">${item.lokasi}</td>
+                    <td class="py-3 px-4 text-xs font-semibold">${item.pelapor}</td>
+                    <td class="py-3 px-4">${fotoElement}</td>
+                    <td class="py-3 px-4 no-print">${aksi}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            renderDashboardExpiredVisual();
+        }
+
+        function bukaModalExpired() {
+            const m = document.getElementById('modal-expired');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function tutupModalExpired() {
+            const m = document.getElementById('modal-expired');
+            if (m) m.classList.add('hidden');
+            const f = document.getElementById('form-expired');
+            if (f) f.reset();
+            const p = document.getElementById('container-preview-expired');
+            if (p) p.classList.add('hidden');
+            
+            const container = document.getElementById('container-items-expired');
+            if (container) {
+                container.innerHTML = `
+                    <div class="item-expired-row bg-red-50/40 p-3 rounded-lg border border-red-200 relative space-y-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Kategori</label>
+                                <input type="text" value="Food 🍔" disabled class="w-full bg-gray-100 border rounded p-1.5 text-xs font-bold text-amber-800">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Mat ID Produk *</label>
+                                <input type="text" class="exp-matid w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: MAT-90021">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Nama Produk Food *</label>
+                                <input type="text" class="exp-nama w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: Milo Sachet 1Kg">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-red-800">Tanggal Expired (ED) *</label>
+                                <input type="date" class="exp-date w-full border border-red-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none font-bold" required>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Qty Expired *</label>
+                                <input type="number" min="1" class="exp-qty w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: 10">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Satuan *</label>
+                                <select class="exp-satuan w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none">
+                                    <option value="Pcs">Pcs</option>
+                                    <option value="Box / Karton">Box / Karton</option>
+                                    <option value="Master Carton">Master Carton</option>
+                                    <option value="Pallet">Pallet</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function tambahBarisProdukExpired() {
+            const container = document.getElementById('container-items-expired');
+            if (!container) return;
+            const rowCount = container.children.length + 1;
+
+            const div = document.createElement('div');
+            div.className = 'item-expired-row bg-red-50/40 p-3 rounded-lg border border-red-200 relative space-y-2';
+            div.innerHTML = `
+                <button type="button" onclick="hapusBarisProdukExpired(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold bg-white rounded-full px-1.5 py-0.5 border">✕</button>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Kategori</label>
+                        <input type="text" value="Food 🍔" disabled class="w-full bg-gray-100 border rounded p-1.5 text-xs font-bold text-amber-800">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Mat ID Produk *</label>
+                        <input type="text" class="exp-matid w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: MAT-90021">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Nama Produk Food *</label>
+                        <input type="text" class="exp-nama w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: Produk Food #${rowCount}">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-red-800">Tanggal Expired (ED) *</label>
+                        <input type="date" class="exp-date w-full border border-red-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none font-bold" required>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Qty Expired *</label>
+                        <input type="number" min="1" class="exp-qty w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none" required placeholder="Contoh: 1">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Satuan *</label>
+                        <select class="exp-satuan w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-red-500 outline-none">
+                            <option value="Pcs">Pcs</option>
+                            <option value="Box / Karton">Box / Karton</option>
+                            <option value="Master Carton">Master Carton</option>
+                            <option value="Pallet">Pallet</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function hapusBarisProdukExpired(btn) {
+            const container = document.getElementById('container-items-expired');
+            if (container && container.children.length > 1) {
+                btn.closest('.item-expired-row').remove();
+            } else {
+                alert("Minimal harus terdapat 1 produk Food!");
+            }
+        }
+
+        function previewFotoExpired(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    urlFotoExpiredSementara = e.target.result;
+                    const img = document.getElementById('img-preview-expired');
+                    const c = document.getElementById('container-preview-expired');
+                    if (img) img.src = urlFotoExpiredSementara;
+                    if (c) c.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function simpanExpiredBaru(event) {
+            event.preventDefault();
+            const lokasi = document.getElementById('expired-lokasi').value;
+            const now = new Date();
+            const tglStr = now.toISOString().slice(0,10) + ' ' + now.toTimeString().slice(0,5);
+
+            const rows = document.querySelectorAll('.item-expired-row');
+            
+            rows.forEach((row, index) => {
+                const matId = row.querySelector('.exp-matid').value;
+                const nama = row.querySelector('.exp-nama').value;
+                const expDate = row.querySelector('.exp-date').value;
+                const qty = parseInt(row.querySelector('.exp-qty').value) || 1;
+                const satuan = row.querySelector('.exp-satuan').value;
+
+                const newItem = {
+                    id: Date.now() + index,
+                    tanggal: tglStr,
+                    kategori: 'Food',
+                    expDate,
+                    matId,
+                    nama,
+                    qty,
+                    satuan,
+                    lokasi,
+                    pelapor: userAktif === 'Supervisor' ? 'Supervisor' : userAktif,
+                    foto: urlFotoExpiredSementara,
+                    status: 'Pending'
+                };
+
+                dataExpired.unshift(newItem);
+            });
+
+            simpanKeStorage();
+            tutupModalExpired();
+            renderExpired();
+            renderStatistik();
+        }
+
+        function prosesExpired(id) {
+            const item = dataExpired.find(i => i.id === id);
+            if (item) {
+                item.status = 'Selesai';
+                simpanKeStorage();
+                renderExpired();
+                renderStatistik();
+            }
+        }
+
+        function exportExpiredExcel() {
+            if (dataExpired.length === 0) {
+                alert("Belum ada data Opname Expired untuk diekspor!");
+                return;
+            }
+
+            const dataArray = [
+                ["Tanggal Lapor", "Tanggal Expired (ED)", "Kategori", "Mat ID", "Nama Produk Food", "Qty Expired", "Lokasi", "Pelapor", "Status ED"]
+            ];
+
+            const today = new Date().toISOString().slice(0,10);
+
+            dataExpired.forEach(row => {
+                const tglLaporFormatted = formatTanggalIndo(row.tanggal);
+                const tglEdFormatted = formatTanggalIndo(row.expDate);
+                
+                let statusEdText = "Aman";
+                if (row.expDate) {
+                    const diffDays = Math.ceil((new Date(row.expDate) - new Date(today)) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) statusEdText = "KEDALUWARSA";
+                    else if (diffDays <= 30) statusEdText = `Near ED (${diffDays} Hari)`;
+                }
+
+                const matIdText = row.matId || "-";
+                const qtySatuanText = `${row.qty} ${row.satuan || ''}`.trim();
+
+                dataArray.push([
+                    tglLaporFormatted,
+                    tglEdFormatted,
+                    "Food",
+                    matIdText,
+                    row.nama,
+                    qtySatuanText,
+                    row.lokasi,
+                    row.pelapor,
+                    statusEdText
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(dataArray);
+
+            ws['!cols'] = [
+                { wch: 18 }, { wch: 20 }, { wch: 10 }, { wch: 14 },
+                { wch: 35 }, { wch: 16 }, { wch: 18 }, { wch: 20 }, { wch: 18 }
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, "Opname Expired Food");
+            XLSX.writeFile(wb, `Laporan_InniloAps_Expired_Food_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        function exportExpiredCSV() {
+            if (dataExpired.length === 0) {
+                alert("Belum ada data Opname Expired untuk diekspor!");
+                return;
+            }
+
+            let csvContent = "\uFEFFTanggal Lapor,Tanggal Expired,Kategori,Mat ID,Nama Produk Food,Qty Expired,Lokasi,Pelapor\n";
+            dataExpired.forEach(row => {
+                const tglLaporFormatted = formatTanggalIndo(row.tanggal);
+                const tglEdFormatted = formatTanggalIndo(row.expDate);
+                const matIdText = row.matId || "-";
+                const qtySatuanText = `${row.qty} ${row.satuan || ''}`.trim();
+
+                csvContent += `"${tglLaporFormatted}","${tglEdFormatted}","Food","${matIdText}","${row.nama}","${qtySatuanText}","${row.lokasi}","${row.pelapor}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Laporan_InniloAps_Expired_Food_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // LOGIKA BARANG DAMAGED
+        function renderDashboardDamagedVisual() {
+            const alertContainer = document.getElementById('container-alerts-damaged');
+            if (!alertContainer) return;
+            alertContainer.innerHTML = '';
+
+            const pendingItems = dataDamaged.filter(i => i.status === 'Pending');
+            const highQtyItems = dataDamaged.filter(i => (i.qty || 0) >= 10);
+
+            if (highQtyItems.length > 0) {
+                const topHigh = highQtyItems[0];
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'bg-red-100 border-l-4 border-red-600 text-red-900 p-3.5 rounded-lg text-xs flex justify-between items-center shadow-sm';
+                alertDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">🚨</span>
+                        <div>
+                            <strong class="font-bold">PERINGATAN TINGKAT DAMAGED TINGGI:</strong> 
+                            Produk <span class="font-extrabold underline">${topHigh.nama}</span> [Mat ID: ${topHigh.matId || '-'}] memiliki jumlah kerusakan tinggi sebesar <strong>${topHigh.qty} ${topHigh.satuan}</strong> di lokasi ${topHigh.lokasi}!
+                        </div>
+                    </div>
+                `;
+                alertContainer.appendChild(alertDiv);
+            }
+
+            if (pendingItems.length > 0) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'bg-amber-100 border-l-4 border-amber-600 text-amber-900 p-3.5 rounded-lg text-xs flex justify-between items-center shadow-sm';
+                alertDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⚠️</span>
+                        <div><strong class="font-bold">NOTIFIKASI SUPERVISOR:</strong> Terdapat <strong>${pendingItems.length} Laporan Barang Damaged Pending</strong>.</div>
+                    </div>
+                `;
+                alertContainer.appendChild(alertDiv);
+            }
+
+            const countFood = dataDamaged.filter(i => (i.kategori || 'Food') === 'Food').reduce((acc, c) => acc + (c.qty || 0), 0);
+            const countNonFood = dataDamaged.filter(i => i.kategori === 'Non Food').reduce((acc, c) => acc + (c.qty || 0), 0);
+
+            const canvasKat = document.getElementById('chartKategori');
+            if (canvasKat) {
+                const ctxKategori = canvasKat.getContext('2d');
+                if (chartKategoriInstance) chartKategoriInstance.destroy();
+                chartKategoriInstance = new Chart(ctxKategori, {
+                    type: 'doughnut',
+                    data: { labels: ['Food 🍔', 'Non Food 📦'], datasets: [{ data: [countFood, countNonFood], backgroundColor: ['#D97706', '#2563EB'], borderWidth: 2 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+                });
+            }
+
+            const productQtyMap = {};
+            dataDamaged.forEach(item => {
+                const key = `${item.nama} (${item.matId || '-'})`;
+                productQtyMap[key] = (productQtyMap[key] || 0) + (item.qty || 0);
+            });
+
+            const sortedProducts = Object.keys(productQtyMap)
+                .map(k => ({ name: k, qty: productQtyMap[k] }))
+                .sort((a, b) => b.qty - a.qty).slice(0, 5);
+
+            const elTopName = document.getElementById('stat-damaged-top-name');
+            const elTopQty = document.getElementById('stat-damaged-top-qty');
+            if (sortedProducts.length > 0) {
+                if (elTopName) elTopName.innerText = sortedProducts[0].name;
+                if (elTopQty) elTopQty.innerText = `${sortedProducts[0].qty} Qty Rusak`;
+            } else {
+                if (elTopName) elTopName.innerText = '-';
+                if (elTopQty) elTopQty.innerText = '0 Qty';
+            }
+
+            const canvasTopP = document.getElementById('chartTopProducts');
+            if (canvasTopP) {
+                const ctxTop = canvasTopP.getContext('2d');
+                if (chartTopProductsInstance) chartTopProductsInstance.destroy();
+                chartTopProductsInstance = new Chart(ctxTop, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedProducts.map(p => p.name.length > 20 ? p.name.slice(0,20) + '...' : p.name),
+                        datasets: [{ label: 'Total Qty Rusak', data: sortedProducts.map(p => p.qty), backgroundColor: '#007A48', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { font: { size: 10 } } } } }
+                });
+            }
+        }
+
+        function tambahBarisProduk() {
+            const container = document.getElementById('container-items-damaged');
+            if (!container) return;
+            const rowCount = container.children.length + 1;
+
+            const div = document.createElement('div');
+            div.className = 'item-damaged-row bg-milo-50/70 p-3 rounded-lg border border-milo-200 relative space-y-2';
+            div.innerHTML = `
+                <button type="button" onclick="hapusBarisProduk(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold bg-white rounded-full px-1.5 py-0.5 border">✕</button>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Kategori *</label>
+                        <select class="item-kategori w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none">
+                            <option value="Food">Food 🍔</option>
+                            <option value="Non Food">Non Food 📦</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Mat ID Produk *</label>
+                        <input type="text" class="item-matid w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: MAT-88231">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Nama / Deskripsi Produk *</label>
+                        <input type="text" class="item-nama w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: Produk #${rowCount}">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Qty Rusak *</label>
+                        <input type="number" min="1" class="item-qty w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: 1">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700">Satuan *</label>
+                        <select class="item-satuan w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none">
+                            <option value="Pcs">Pcs</option>
+                            <option value="Box / Karton">Box / Karton</option>
+                            <option value="Master Carton">Master Carton</option>
+                            <option value="Pallet">Pallet</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(div);
+        }
+
+        function hapusBarisProduk(btn) {
+            const container = document.getElementById('container-items-damaged');
+            if (container && container.children.length > 1) {
+                btn.closest('.item-damaged-row').remove();
+            } else {
+                alert("Minimal harus terdapat 1 produk dalam laporan!");
+            }
+        }
+
+        function renderDamaged() {
+            const tbody = document.getElementById('tabel-damaged');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (dataDamaged.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-gray-400 text-xs">Belum ada laporan barang damaged.</td></tr>`;
+                renderDashboardDamagedVisual();
+                return;
+            }
+
+            dataDamaged.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+
+                let badgeStatus = item.status === 'Selesai' 
+                    ? `<span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold">Diproses</span>`
+                    : `<span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-bold">Pending</span>`;
+
+                let badgeKategori = item.kategori === 'Food'
+                    ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Food 🍔</span>`
+                    : `<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold">Non Food 📦</span>`;
+
+                const fotoElement = item.foto 
+                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-milo-50 text-milo-800 px-2 py-1 rounded border border-milo-200">📷 Lihat Foto</button>`
+                    : `<span class="text-xs text-gray-400 italic">Tanpa Foto</span>`;
+
+                const isSupervisor = userAktif === 'Supervisor';
+                let aksi = isSupervisor && item.status === 'Pending'
+                    ? `<button onclick="prosesDamaged(${item.id})" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Diproses</button>`
+                    : `<span class="text-xs text-gray-400">Tercatat</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-xs font-semibold">${formatTanggalIndo(item.tanggal)}</td>
+                    <td class="py-3 px-4">${fotoElement}</td>
+                    <td class="py-3 px-4">${badgeKategori}</td>
+                    <td class="py-3 px-4 text-xs font-mono font-bold text-milo-800">${item.matId || '-'}</td>
+                    <td class="py-3 px-4 font-bold text-gray-800">${item.nama}</td>
+                    <td class="py-3 px-4 font-bold text-red-600">${item.qty} ${item.satuan}</td>
+                    <td class="py-3 px-4 text-xs">${item.lokasi}</td>
+                    <td class="py-3 px-4 text-xs font-semibold">${item.pelapor}</td>
+                    <td class="py-3 px-4">${badgeStatus}</td>
+                    <td class="py-3 px-4 no-print">${aksi}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            renderDashboardDamagedVisual();
+        }
+
+        function bukaModalDamaged() {
+            const m = document.getElementById('modal-damaged');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function tutupModalDamaged() {
+            const m = document.getElementById('modal-damaged');
+            if (m) m.classList.add('hidden');
+            const f = document.getElementById('form-damaged');
+            if (f) f.reset();
+            const p = document.getElementById('container-preview-damaged');
+            if (p) p.classList.add('hidden');
+            
+            const container = document.getElementById('container-items-damaged');
+            if (container) {
+                container.innerHTML = `
+                    <div class="item-damaged-row bg-milo-50/70 p-3 rounded-lg border border-milo-200 relative space-y-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Kategori *</label>
+                                <select class="item-kategori w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none">
+                                    <option value="Food">Food 🍔</option>
+                                    <option value="Non Food">Non Food 📦</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Mat ID Produk *</label>
+                                <input type="text" class="item-matid w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: MAT-88231">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Nama / Deskripsi Produk *</label>
+                                <input type="text" class="item-nama w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: Milo 3-in-1 Sachet 1Kg">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Qty Rusak *</label>
+                                <input type="number" min="1" class="item-qty w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none" required placeholder="Contoh: 5">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-700">Satuan *</label>
+                                <select class="item-satuan w-full border rounded p-1.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none">
+                                    <option value="Pcs">Pcs</option>
+                                    <option value="Box / Karton">Box / Karton</option>
+                                    <option value="Master Carton">Master Carton</option>
+                                    <option value="Pallet">Pallet</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function previewFotoDamaged(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    urlFotoDamagedSementara = e.target.result;
+                    const img = document.getElementById('img-preview-damaged');
+                    const c = document.getElementById('container-preview-damaged');
+                    if (img) img.src = urlFotoDamagedSementara;
+                    if (c) c.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function simpanDamagedBaru(event) {
+            event.preventDefault();
+            const lokasi = document.getElementById('damaged-lokasi').value;
+            const now = new Date();
+            const tglStr = now.toISOString().slice(0,10) + ' ' + now.toTimeString().slice(0,5);
+
+            const rows = document.querySelectorAll('.item-damaged-row');
+            
+            rows.forEach((row, index) => {
+                const kategori = row.querySelector('.item-kategori').value;
+                const matId = row.querySelector('.item-matid').value;
+                const nama = row.querySelector('.item-nama').value;
+                const qty = parseInt(row.querySelector('.item-qty').value) || 1;
+                const satuan = row.querySelector('.item-satuan').value;
+
+                const newItem = {
+                    id: Date.now() + index,
+                    tanggal: tglStr,
+                    kategori,
+                    matId,
+                    nama,
+                    qty,
+                    satuan,
+                    lokasi,
+                    pelapor: userAktif === 'Supervisor' ? 'Supervisor' : userAktif,
+                    foto: urlFotoDamagedSementara,
+                    status: 'Pending'
+                };
+
+                dataDamaged.unshift(newItem);
+            });
+
+            simpanKeStorage();
+            tutupModalDamaged();
+            renderDamaged();
+            renderStatistik();
+        }
+
+        function prosesDamaged(id) {
+            const item = dataDamaged.find(i => i.id === id);
+            if (item) {
+                item.status = 'Selesai';
+                simpanKeStorage();
+                renderDamaged();
+                renderStatistik();
+            }
+        }
+
+        function exportDamagedExcel() {
+            if (dataDamaged.length === 0) {
+                alert("Belum ada data barang damaged untuk diekspor!");
+                return;
+            }
+
+            const dataArray = [
+                ["Tanggal", "Foto", "Kategori", "Mat ID", "Nama Produk / Deskripsi", "Qty Rusak", "Lokasi", "Pelapor"]
+            ];
+
+            dataDamaged.forEach(row => {
+                const tglFormatted = formatTanggalIndo(row.tanggal);
+                const fotoText = row.foto ? "Lihat Foto" : "Tanpa Foto";
+                const kategoriText = row.kategori || "Food";
+                const matIdText = row.matId || "-";
+                const qtySatuanText = `${row.qty} ${row.satuan || ''}`.trim();
+
+                dataArray.push([
+                    tglFormatted,
+                    fotoText,
+                    kategoriText,
+                    matIdText,
+                    row.nama,
+                    qtySatuanText,
+                    row.lokasi,
+                    row.pelapor
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(dataArray);
+
+            ws['!cols'] = [
+                { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 14 },
+                { wch: 35 }, { wch: 16 }, { wch: 18 }, { wch: 20 }
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan Damaged");
+            XLSX.writeFile(wb, `Laporan_InniloAps_Damaged_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        function exportDamagedCSV() {
+            if (dataDamaged.length === 0) {
+                alert("Belum ada data barang damaged untuk diekspor!");
+                return;
+            }
+
+            let csvContent = "\uFEFFTanggal,Foto,Kategori,Mat ID,Nama Produk / Deskripsi,Qty Rusak,Lokasi,Pelapor\n";
+            dataDamaged.forEach(row => {
+                const tglFormatted = formatTanggalIndo(row.tanggal);
+                const fotoText = row.foto ? "Lihat Foto" : "Tanpa Foto";
+                const kategoriText = row.kategori || "Food";
+                const matIdText = row.matId || "-";
+                const qtySatuanText = `${row.qty} ${row.satuan || ''}`.trim();
+
+                csvContent += `"${tglFormatted}","${fotoText}","${kategoriText}","${matIdText}","${row.nama}","${qtySatuanText}","${row.lokasi}","${row.pelapor}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Laporan_InniloAps_Damaged_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // LOGIKA OPNAME DAILY
         function simpanOpnameDaily(event) {
             event.preventDefault();
-            
             if (userAktif !== 'Supervisor') {
-                alert('Akses ditolak! Hanya Supervisor yang diperbolehkan mengunggah file opname.');
+                alert('Akses ditolak! Hanya Supervisor / Manajemen yang diperbolehkan mengunggah file opname.');
                 return;
             }
 
@@ -602,7 +1756,6 @@
                 return;
             }
 
-            // Membaca File dan Konversi ke Base64 Data URL
             const reader = new FileReader();
             reader.onload = function(e) {
                 const fileBase64 = e.target.result;
@@ -624,8 +1777,10 @@
                 dataOpname.unshift(itemBaru);
                 simpanKeStorage();
                 
-                document.getElementById('form-opname').reset();
-                document.getElementById('opname-tanggal').value = new Date().toISOString().slice(0,10);
+                const formOp = document.getElementById('form-opname');
+                if (formOp) formOp.reset();
+                const opDate = document.getElementById('opname-tanggal');
+                if (opDate) opDate.value = new Date().toISOString().slice(0,10);
                 
                 renderOpname();
                 alert('Laporan Opname Daily berhasil diunggah!');
@@ -636,9 +1791,11 @@
 
         function renderOpname() {
             const tbody = document.getElementById('tabel-opname');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            document.getElementById('stat-opname-count').innerText = `${dataOpname.length} Berkas`;
+            const elCount = document.getElementById('stat-opname-count');
+            if (elCount) elCount.innerText = `${dataOpname.length} Berkas`;
 
             if (dataOpname.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">Belum ada berkas Opname Daily yang diunggah.</td></tr>`;
@@ -657,8 +1814,7 @@
                     <td class="py-3.5 px-4 text-xs text-gray-400">${item.uploadTime}</td>
                     <td class="py-3.5 px-4 no-print flex items-center gap-2">
                         <a href="${item.fileData}" download="${item.fileName}" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow-sm transition">
-                            <span>📥</span>
-                            <span>Download File</span>
+                            <span>📥</span><span>Download File</span>
                         </a>
                         <button onclick="hapusOpname(${item.id})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">🗑️</button>
                     </td>
@@ -674,129 +1830,6 @@
                 simpanKeStorage();
                 renderOpname();
             }
-        }
-
-        // RENDER DAMAGED GOODS
-        function renderDamaged() {
-            const tbody = document.getElementById('tabel-damaged');
-            tbody.innerHTML = '';
-
-            if (dataDamaged.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400 text-xs">Belum ada laporan barang damaged.</td></tr>`;
-                return;
-            }
-
-            dataDamaged.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
-
-                let badgeStatus = '';
-                if (item.status === 'Selesai') badgeStatus = `<span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold">Diproses (Done)</span>`;
-                else badgeStatus = `<span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-bold">Pending (Dilaporkan)</span>`;
-
-                const fotoElement = item.foto 
-                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-milo-50 text-milo-800 px-2 py-1 rounded border border-milo-200">📷 Lihat Foto</button>`
-                    : `<span class="text-xs text-gray-400 italic">Tanpa Foto</span>`;
-
-                const isSupervisor = userAktif === 'Supervisor';
-                let aksi = isSupervisor && item.status === 'Pending'
-                    ? `<button onclick="prosesDamaged(${item.id})" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Diproses</button>`
-                    : `<span class="text-xs text-gray-400">Tercatat</span>`;
-
-                tr.innerHTML = `
-                    <td class="py-3 px-4 text-xs">${item.tanggal}</td>
-                    <td class="py-3 px-4">${fotoElement}</td>
-                    <td class="py-3 px-4 font-bold text-gray-800">${item.nama}</td>
-                    <td class="py-3 px-4 font-bold text-red-600">${item.qty} ${item.satuan}</td>
-                    <td class="py-3 px-4 text-xs">${item.lokasi}</td>
-                    <td class="py-3 px-4 text-xs font-semibold">${item.pelapor}</td>
-                    <td class="py-3 px-4">${badgeStatus}</td>
-                    <td class="py-3 px-4 no-print">${aksi}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function bukaModalDamaged() {
-            document.getElementById('modal-damaged').classList.remove('hidden');
-        }
-
-        function tutupModalDamaged() {
-            document.getElementById('modal-damaged').classList.add('hidden');
-            document.getElementById('form-damaged').reset();
-            document.getElementById('container-preview-damaged').classList.add('hidden');
-        }
-
-        function previewFotoDamaged(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    urlFotoDamagedSementara = e.target.result;
-                    document.getElementById('img-preview-damaged').src = urlFotoDamagedSementara;
-                    document.getElementById('container-preview-damaged').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function simpanDamagedBaru(event) {
-            event.preventDefault();
-            const nama = document.getElementById('damaged-nama').value;
-            const qty = parseInt(document.getElementById('damaged-qty').value);
-            const satuan = document.getElementById('damaged-satuan').value;
-            const lokasi = document.getElementById('damaged-lokasi').value;
-
-            const now = new Date();
-            const tglStr = now.toISOString().slice(0,10) + ' ' + now.toTimeString().slice(0,5);
-
-            const newItem = {
-                id: Date.now(),
-                tanggal: tglStr,
-                nama,
-                qty,
-                satuan,
-                lokasi,
-                pelapor: userAktif === 'Supervisor' ? 'Supervisor' : userAktif,
-                foto: urlFotoDamagedSementara,
-                status: 'Pending'
-            };
-
-            dataDamaged.unshift(newItem);
-            simpanKeStorage();
-            tutupModalDamaged();
-            renderDamaged();
-            renderStatistik();
-        }
-
-        function prosesDamaged(id) {
-            const item = dataDamaged.find(i => i.id === id);
-            if (item) {
-                item.status = 'Selesai';
-                simpanKeStorage();
-                renderDamaged();
-                renderStatistik();
-            }
-        }
-
-        function exportDamagedCSV() {
-            if (dataDamaged.length === 0) {
-                alert("Belum ada data barang damaged untuk diekspor!");
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,ID,Tanggal,Nama Produk,Qty Rusak,Satuan,Lokasi Area,Pelapor,Status\n";
-            dataDamaged.forEach(row => {
-                csvContent += `${row.id},"${row.tanggal}","${row.nama}",${row.qty},"${row.satuan}","${row.lokasi}","${row.pelapor}","${row.status}"\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Laporan_InniloAps_Damaged_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         function exportKebersihanCSV() {
@@ -819,9 +1852,9 @@
             document.body.removeChild(link);
         }
 
-        // RENDER JADWAL KEBERSIHAN
         function renderTabel() {
             const tbody = document.getElementById('tabel-jadwal');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
             dataJadwal.forEach(item => {
@@ -856,17 +1889,39 @@
         }
 
         function renderStatistik() {
-            document.getElementById('stat-total').innerText = dataJadwal.length;
-            document.getElementById('stat-selesai').innerText = dataJadwal.filter(i => i.status === 'Selesai').length;
-            document.getElementById('stat-pending').innerText = dataJadwal.filter(i => i.status !== 'Selesai').length;
+            const elTot = document.getElementById('stat-total');
+            const elSel = document.getElementById('stat-selesai');
+            const elPen = document.getElementById('stat-pending');
 
-            document.getElementById('stat-damaged-total').innerText = dataDamaged.length;
-            document.getElementById('stat-damaged-qty').innerText = dataDamaged.reduce((acc, curr) => acc + (curr.qty || 0), 0);
-            document.getElementById('stat-damaged-selesai').innerText = dataDamaged.filter(i => i.status === 'Selesai').length;
+            if (elTot) elTot.innerText = dataJadwal.length;
+            if (elSel) elSel.innerText = dataJadwal.filter(i => i.status === 'Selesai').length;
+            if (elPen) elPen.innerText = dataJadwal.filter(i => i.status !== 'Selesai').length;
+
+            const totalDamagedQty = dataDamaged.reduce((acc, curr) => acc + (curr.qty || 0), 0);
+            const foodQty = dataDamaged.filter(i => (i.kategori || 'Food') === 'Food').reduce((acc, curr) => acc + (curr.qty || 0), 0);
+            const nonFoodQty = dataDamaged.filter(i => i.kategori === 'Non Food').reduce((acc, curr) => acc + (curr.qty || 0), 0);
+
+            const elDamTot = document.getElementById('stat-damaged-total');
+            const elDamQty = document.getElementById('stat-damaged-qty');
+            const elDamFood = document.getElementById('stat-damaged-food');
+            const elDamNon = document.getElementById('stat-damaged-nonfood');
+
+            if (elDamTot) elDamTot.innerText = dataDamaged.length;
+            if (elDamQty) elDamQty.innerText = totalDamagedQty;
+            if (elDamFood) elDamFood.innerText = `Food: ${foodQty}`;
+            if (elDamNon) elDamNon.innerText = `Non: ${nonFoodQty}`;
         }
 
-        function bukaModalTambah() { document.getElementById('modal-tambah').classList.remove('hidden'); }
-        function tutupModalTambah() { document.getElementById('modal-tambah').classList.add('hidden'); }
+        function bukaModalTambah() {
+            const m = document.getElementById('modal-tambah');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function tutupModalTambah() {
+            const m = document.getElementById('modal-tambah');
+            if (m) m.classList.add('hidden');
+        }
+
         function simpanJadwalBaru(e) {
             e.preventDefault();
             dataJadwal.push({
@@ -880,13 +1935,13 @@
             simpanKeStorage(); tutupModalTambah(); renderTabel(); renderStatistik();
         }
 
-        function bukaModalUpload(id) { idAktif = id; document.getElementById('modal-upload').classList.remove('hidden'); }
-        function tutupModalUpload() { document.getElementById('modal-upload').classList.add('hidden'); }
+        function bukaModalUpload(id) { idAktif = id; const m = document.getElementById('modal-upload'); if (m) m.classList.remove('hidden'); }
+        function tutupModalUpload() { const m = document.getElementById('modal-upload'); if (m) m.classList.add('hidden'); }
         function previewFoto(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (ev) => { urlFotoSementara = ev.target.result; document.getElementById('img-preview').src = urlFotoSementara; document.getElementById('container-preview').classList.remove('hidden'); };
+                reader.onload = (ev) => { urlFotoSementara = ev.target.result; const img = document.getElementById('img-preview'); const c = document.getElementById('container-preview'); if (img) img.src = urlFotoSementara; if (c) c.classList.remove('hidden'); };
                 reader.readAsDataURL(file);
             }
         }
@@ -896,17 +1951,19 @@
             tutupModalUpload();
         }
 
-        function lihatFoto(url) { document.getElementById('img-full').src = url; document.getElementById('modal-lihat').classList.remove('hidden'); }
-        function tutupModalLihat() { document.getElementById('modal-lihat').classList.add('hidden'); }
+        function lihatFoto(url) { const img = document.getElementById('img-full'); const m = document.getElementById('modal-lihat'); if (img) img.src = url; if (m) m.classList.remove('hidden'); }
+        function tutupModalLihat() { const m = document.getElementById('modal-lihat'); if (m) m.classList.add('hidden'); }
 
         function resetDataAwal() {
             if (confirm('Apakah Anda yakin ingin mengembalikan data ke kondisi awal?')) {
                 dataJadwal = [...defaultJadwal];
                 dataDamaged = [...defaultDamaged];
+                dataExpired = [...defaultExpired];
                 dataOpname = [];
                 simpanKeStorage();
                 renderTabel();
                 renderDamaged();
+                renderExpired();
                 renderOpname();
                 renderStatistik();
             }
