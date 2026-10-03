@@ -171,15 +171,12 @@
             </div>
         </div>
 
-        <!-- LEADERBOARD PERFORMA PETUGAS (PIC) -->
         <div class="bg-white rounded-xl shadow-sm p-5 border border-themeblue-100">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-base font-bold text-themeblue-900">🏆 Leaderboard Performa Kebersihan Petugas (PIC)</h2>
                 <span class="text-[10px] bg-themeblue-100 text-themeblue-800 font-bold px-2 py-0.5 rounded">Peringkat Real-time</span>
             </div>
-            <div id="container-pic" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Peringkat PIC di-render otomatis lewat JS -->
-            </div>
+            <div id="container-pic" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-themeblue-100">
@@ -189,7 +186,9 @@
                     <button onclick="exportKebersihanCSV()" class="role-supervisor bg-themeblue-700 hover:bg-themeblue-800 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1">
                         <span>📊</span><span>Ekspor CSV</span>
                     </button>
-                    <button onclick="resetDataAwal()" class="role-supervisor bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-semibold">🔄 Reset</button>
+                    <button onclick="resetDataJadwal()" class="role-supervisor bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 px-3 py-2 rounded-lg text-xs font-semibold">
+                        🗑️ Reset Jadwal
+                    </button>
                     <button onclick="bukaModalTambah()" class="role-supervisor bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-xs shadow-sm">+ Tambah Jadwal</button>
                 </div>
             </div>
@@ -295,6 +294,9 @@
                     </button>
                     <button onclick="exportDamagedCSV()" class="bg-themeblue-700 hover:bg-themeblue-800 text-white font-semibold px-3 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
                         <span>📊</span><span>Ekspor CSV</span>
+                    </button>
+                    <button onclick="resetDataDamaged()" class="role-supervisor bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 px-3 py-2 rounded-lg text-xs font-semibold">
+                        🗑️ Bersihkan Data Damaged
                     </button>
                     <button onclick="bukaModalDamaged()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
                         <span>📷 +</span><span>Laporkan Barang Damaged</span>
@@ -410,6 +412,9 @@
                     <button onclick="exportExpiredCSV()" class="bg-themeblue-700 hover:bg-themeblue-800 text-white font-semibold px-3 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
                         <span>📊</span><span>Ekspor CSV</span>
                     </button>
+                    <button onclick="resetDataExpired()" class="role-supervisor bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 px-3 py-2 rounded-lg text-xs font-semibold">
+                        🗑️ Bersihkan Data Expired
+                    </button>
                     <button onclick="bukaModalExpired()" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition flex items-center gap-1">
                         <span>⏳ +</span><span>Input Opname Expired</span>
                     </button>
@@ -479,7 +484,12 @@
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-themeblue-100">
             <div class="p-4 border-b border-themeblue-100 flex justify-between items-center bg-white">
                 <h3 class="text-sm font-bold text-themeblue-900">Daftar Berkas Opname Daily Tersimpan</h3>
-                <span id="stat-opname-count" class="text-xs font-bold bg-themeblue-100 text-themeblue-900 px-3 py-1 rounded-full">0 Berkas</span>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetDataOpname()" class="role-supervisor bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 px-3 py-1 rounded-lg text-xs font-semibold">
+                        🗑️ Bersihkan Arsip Opname
+                    </button>
+                    <span id="stat-opname-count" class="text-xs font-bold bg-themeblue-100 text-themeblue-900 px-3 py-1 rounded-full">0 Berkas</span>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -750,7 +760,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIKA HTML/JS TERBEBAS EROR -->
+    <!-- SCRIPT LOGIKA HTML/JS TERBEBAS EROR & DATA AWAL KOSONG -->
     <script>
         const userDatabase = {
             'supervisor': { password: 'admin123', name: 'Supervisor Gudang', role: 'Supervisor' },
@@ -785,22 +795,10 @@
             "Wahyu Agustian", "Yogi Karnisa"
         ];
 
-        const defaultJadwal = [
-            { id: 1, waktu: '08:00 - 09:00', shift: 'Shift 1', zona: 'Zona A - Loading Dock', pic: 'Aldy Surya Pratama', foto: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400', status: 'Selesai' },
-            { id: 2, waktu: '09:30 - 10:30', shift: 'Shift 1', zona: 'Zona B - Lorong Rak 1-5', pic: 'Bobby Disani', foto: null, status: 'Proses' },
-            { id: 3, waktu: '11:00 - 12:00', shift: 'Shift 1', zona: 'Zona C - Area Packing', pic: 'Agus Suwandani', foto: null, status: 'Selesai' }
-        ];
-
-        const defaultDamaged = [
-            { id: 101, tanggal: '2026-10-01 09:15', kategori: 'Non Food', matId: '-', nama: 'Karton Indomie Rasa Soto (Bocor)', qty: 3, satuan: 'Box / Karton', lokasi: 'Rak B-02', pelapor: 'Bobby Disani', foto: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400', status: 'Pending' },
-            { id: 102, tanggal: '2026-10-01 11:30', kategori: 'Food', matId: 'MAT-90021', nama: 'Milo 3-in-1 Sachet 1Kg (Bocor)', qty: 12, satuan: 'Box / Karton', lokasi: 'Area Staging A', pelapor: 'Aldy Surya Pratama', foto: null, status: 'Pending' }
-        ];
-
-        const defaultExpired = [
-            { id: 201, tanggal: '2026-10-01 10:00', expDate: '2026-09-15', matId: 'MAT-90021', nama: 'Milo Powder 1Kg', qty: 15, satuan: 'Pcs', lokasi: 'Chiller B-01', pelapor: 'Bobby Disani', foto: null, status: 'Pending' },
-            { id: 202, tanggal: '2026-10-02 08:30', expDate: '2026-10-20', matId: 'MAT-33100', nama: 'Susu UHT Cokelat 250ml', qty: 8, satuan: 'Box / Karton', lokasi: 'Rak Food C-04', pelapor: 'Irfansyah', foto: null, status: 'Pending' }
-        ];
-
+        // DATA AWAL KOSONG LENGKAP
+        const defaultJadwal = [];
+        const defaultDamaged = [];
+        const defaultExpired = [];
         const defaultOpname = [];
 
         let currentAuthUser = JSON.parse(localStorage.getItem('innilo_auth')) || null;
@@ -1149,7 +1147,7 @@
 
             dataExpired.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+                tr.className = 'hover:bg-themeblue-50/50 border-b border-themeblue-100';
 
                 let badgeED = '';
                 if (item.expDate) {
@@ -1165,14 +1163,14 @@
 
                 const isSupervisor = userAktif === 'Supervisor';
                 let aksi = isSupervisor && item.status === 'Pending'
-                    ? `<button onclick="prosesExpired(${item.id})" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Proses ED</button>`
+                    ? `<button onclick="prosesExpired(${item.id})" class="bg-themeblue-700 hover:bg-themeblue-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Proses ED</button>`
                     : `<span class="text-xs text-gray-400">Tercatat</span>`;
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 text-xs">${formatTanggalIndo(item.tanggal)}</td>
                     <td class="py-3 px-4 text-xs font-bold text-red-700">${formatTanggalIndo(item.expDate)}</td>
                     <td class="py-3 px-4">${badgeED}</td>
-                    <td class="py-3 px-4 text-xs font-mono font-bold text-milo-800">${item.matId || '-'}</td>
+                    <td class="py-3 px-4 text-xs font-mono font-bold text-themeblue-800">${item.matId || '-'}</td>
                     <td class="py-3 px-4 font-bold text-gray-800">${item.nama}</td>
                     <td class="py-3 px-4 font-bold text-red-600">${item.qty} ${item.satuan}</td>
                     <td class="py-3 px-4 text-xs">${item.lokasi}</td>
@@ -1475,7 +1473,7 @@
                     type: 'bar',
                     data: {
                         labels: sortedProducts.map(p => p.name.length > 20 ? p.name.slice(0,20) + '...' : p.name),
-                        datasets: [{ label: 'Total Qty Rusak', data: sortedProducts.map(p => p.qty), backgroundColor: '#007A48', borderRadius: 6 }]
+                        datasets: [{ label: 'Total Qty Rusak', data: sortedProducts.map(p => p.qty), backgroundColor: '#1D4ED8', borderRadius: 6 }]
                     },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { font: { size: 10 } } } } }
                 });
@@ -1551,7 +1549,7 @@
 
             dataDamaged.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+                tr.className = 'hover:bg-themeblue-50/50 border-b border-themeblue-100';
 
                 let badgeStatus = item.status === 'Selesai' 
                     ? `<span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold">Diproses</span>`
@@ -1562,19 +1560,19 @@
                     : `<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold">Non Food 📦</span>`;
 
                 const fotoElement = item.foto 
-                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-milo-50 text-milo-800 px-2 py-1 rounded border border-milo-200">📷 Lihat Foto</button>`
+                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-themeblue-50 text-themeblue-800 px-2 py-1 rounded border border-themeblue-200">📷 Lihat Foto</button>`
                     : `<span class="text-xs text-gray-400 italic">Tanpa Foto</span>`;
 
                 const isSupervisor = userAktif === 'Supervisor';
                 let aksi = isSupervisor && item.status === 'Pending'
-                    ? `<button onclick="prosesDamaged(${item.id})" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Diproses</button>`
+                    ? `<button onclick="prosesDamaged(${item.id})" class="bg-themeblue-700 hover:bg-themeblue-800 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Diproses</button>`
                     : `<span class="text-xs text-gray-400">Tercatat</span>`;
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 text-xs font-semibold">${formatTanggalIndo(item.tanggal)}</td>
                     <td class="py-3 px-4">${fotoElement}</td>
                     <td class="py-3 px-4">${badgeKategori}</td>
-                    <td class="py-3 px-4 text-xs font-mono font-bold text-milo-800">${item.matId || '-'}</td>
+                    <td class="py-3 px-4 text-xs font-mono font-bold text-themeblue-800">${item.matId || '-'}</td>
                     <td class="py-3 px-4 font-bold text-gray-800">${item.nama}</td>
                     <td class="py-3 px-4 font-bold text-red-600">${item.qty} ${item.satuan}</td>
                     <td class="py-3 px-4 text-xs">${item.lokasi}</td>
@@ -1798,16 +1796,16 @@
 
             dataOpname.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+                tr.className = 'hover:bg-themeblue-50/50 border-b border-themeblue-100';
 
                 tr.innerHTML = `
-                    <td class="py-3.5 px-4 font-bold text-milo-800 text-xs">${item.tanggal}</td>
+                    <td class="py-3.5 px-4 font-bold text-themeblue-800 text-xs">${item.tanggal}</td>
                     <td class="py-3.5 px-4 font-semibold text-gray-800">${item.judul}</td>
-                    <td class="py-3.5 px-4 text-xs font-mono text-milo-700">${item.fileName}</td>
+                    <td class="py-3.5 px-4 text-xs font-mono text-themeblue-700">${item.fileName}</td>
                     <td class="py-3.5 px-4 text-xs text-gray-500">${item.fileSize}</td>
                     <td class="py-3.5 px-4 text-xs text-gray-400">${item.uploadTime}</td>
                     <td class="py-3.5 px-4 no-print flex items-center gap-2">
-                        <a href="${item.fileData}" download="${item.fileName}" class="bg-milo-700 hover:bg-milo-800 text-white text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow-sm transition">
+                        <a href="${item.fileData}" download="${item.fileName}" class="bg-themeblue-700 hover:bg-themeblue-800 text-white text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow-sm transition">
                             <span>📥</span><span>Download File</span>
                         </a>
                         <button onclick="hapusOpname(${item.id})" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">🗑️</button>
@@ -1851,23 +1849,29 @@
             if (!tbody) return;
             tbody.innerHTML = '';
 
+            if (dataJadwal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 text-xs">Belum ada jadwal kebersihan yang ditambahkan hari ini.</td></tr>`;
+                renderLeaderboardPIC();
+                return;
+            }
+
             dataJadwal.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-milo-50/50 border-b border-milo-100';
+                tr.className = 'hover:bg-themeblue-50/50 border-b border-themeblue-100';
 
                 let badgeStatus = item.status === 'Selesai' 
                     ? `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>`
                     : `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Belum</span>`;
 
                 let fotoElement = item.foto 
-                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-milo-50 text-milo-800 px-2 py-1 rounded border border-milo-200">📷 Lihat Foto</button>`
+                    ? `<button onclick="lihatFoto('${item.foto}')" class="text-xs bg-themeblue-50 text-themeblue-800 px-2 py-1 rounded border border-themeblue-200">📷 Lihat Foto</button>`
                     : `<span class="text-xs text-gray-400 italic">Belum Ada</span>`;
 
                 const isSupervisor = userAktif === 'Supervisor';
                 const bisaEdit = isSupervisor || item.pic === userAktif;
 
                 let aksi = bisaEdit && item.status !== 'Selesai'
-                    ? `<button onclick="bukaModalUpload(${item.id})" class="bg-milo-700 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Selesai</button>`
+                    ? `<button onclick="bukaModalUpload(${item.id})" class="bg-themeblue-700 text-white text-xs px-2.5 py-1 rounded font-semibold">Tandai Selesai</button>`
                     : `<span class="text-xs text-gray-400">Tuntas ✅</span>`;
 
                 tr.innerHTML = `
@@ -1950,18 +1954,43 @@
         function lihatFoto(url) { const img = document.getElementById('img-full'); const m = document.getElementById('modal-lihat'); if (img) img.src = url; if (m) m.classList.remove('hidden'); }
         function tutupModalLihat() { const m = document.getElementById('modal-lihat'); if (m) m.classList.add('hidden'); }
 
-        function resetDataAwal() {
-            if (confirm('Apakah Anda yakin ingin mengembalikan data ke kondisi awal?')) {
-                dataJadwal = [...defaultJadwal];
-                dataDamaged = [...defaultDamaged];
-                dataExpired = [...defaultExpired];
-                dataOpname = [];
+        // FUNGSI RESET SPESIFIK TIAP MENU
+        function resetDataJadwal() {
+            if (userAktif !== 'Supervisor') return;
+            if (confirm('Apakah Anda yakin ingin menghapus/mengosongkan seluruh data Jadwal Kebersihan?')) {
+                dataJadwal = [];
                 simpanKeStorage();
                 renderTabel();
-                renderDamaged();
-                renderExpired();
-                renderOpname();
                 renderStatistik();
+            }
+        }
+
+        function resetDataDamaged() {
+            if (userAktif !== 'Supervisor') return;
+            if (confirm('Apakah Anda yakin ingin menghapus/mengosongkan seluruh data Laporan Barang Damaged?')) {
+                dataDamaged = [];
+                simpanKeStorage();
+                renderDamaged();
+                renderStatistik();
+            }
+        }
+
+        function resetDataExpired() {
+            if (userAktif !== 'Supervisor') return;
+            if (confirm('Apakah Anda yakin ingin menghapus/mengosongkan seluruh data Opname Expired?')) {
+                dataExpired = [];
+                simpanKeStorage();
+                renderExpired();
+                renderStatistik();
+            }
+        }
+
+        function resetDataOpname() {
+            if (userAktif !== 'Supervisor') return;
+            if (confirm('Apakah Anda yakin ingin menghapus/mengosongkan seluruh arsip berkas Opname Daily?')) {
+                dataOpname = [];
+                simpanKeStorage();
+                renderOpname();
             }
         }
     </script>
