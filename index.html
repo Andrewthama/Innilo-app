@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wpc-Aps (Warehouse Performance & Cordination)</title>
+    <title>Wpc-Aps (Warehouse Performance & Coordination)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS (xlsx) CDN -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK Lintas Perangkat Real-Time CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -46,7 +51,7 @@
             <div class="text-center space-y-2">
                 <div class="inline-block bg-themeblue-100 p-3 rounded-full text-3xl">🏬</div>
                 <h2 class="text-xl md:text-2xl font-black text-themeblue-900">Wpc-Aps</h2>
-                <p class="text-xs text-gray-500">Warehouse Performance & Cordination</p>
+                <p class="text-xs text-gray-500">Warehouse Performance & Coordination</p>
             </div>
 
             <form onsubmit="prosesLogin(event)" class="space-y-4">
@@ -83,7 +88,10 @@
             <span class="text-2xl">🏬</span>
             <div>
                 <h1 class="text-lg md:text-xl font-bold tracking-wide leading-tight">Wpc-Aps</h1>
-                <p class="text-xs text-themeblue-100">Warehouse Performance & Cordination</p>
+                <p class="text-xs text-themeblue-100 flex items-center gap-1">
+                    <span>Warehouse Performance & Coordination</span>
+                    <span id="sync-status-indicator" class="inline-block w-2 h-2 rounded-full bg-green-400 ml-1" title="Sinkronisasi Server Aktif"></span>
+                </p>
             </div>
         </div>
 
@@ -130,7 +138,7 @@
 
     <!-- Header Cetak -->
     <div class="hidden print:block p-6 border-b text-center">
-        <h1 class="text-2xl font-bold">Laporan Ringkasan - Wpc-Aps (Warehouse Performance & Cordination)</h1>
+        <h1 class="text-2xl font-bold">Laporan Ringkasan - Wpc-Aps (Warehouse Performance & Coordination)</h1>
         <p class="text-sm text-gray-600">Tanggal Cetak: <span id="print-date"></span></p>
     </div>
 
@@ -760,8 +768,27 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIKA HTML/JS TERBEBAS EROR & DATA AWAL KOSONG -->
+    <!-- SCRIPT LOGIKA HTML/JS SINKRONISASI REAL-TIME CLOUD FIREBASE -->
     <script>
+        // INISIALISASI FIREBASE REALTIME DATABASE PUBLIC (SINKRONISASI OTOMATIS)
+        const firebaseConfig = {
+            databaseURL: "https://wpc-aps-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+
+        let db = null;
+        let isOnlineFirebase = false;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.database();
+            isOnlineFirebase = true;
+            console.log("Firebase Database Realtime Connected.");
+        } catch (e) {
+            console.warn("Firebase offline Mode LocalStorage fallback active:", e);
+        }
+
         const userDatabase = {
             'supervisor': { password: 'admin123', name: 'Supervisor Gudang', role: 'Supervisor' },
             'dcmanager': { password: 'admin123', name: 'DC Manager', role: 'Supervisor' },
@@ -795,18 +822,12 @@
             "Wahyu Agustian", "Yogi Karnisa"
         ];
 
-        // DATA AWAL KOSONG LENGKAP
-        const defaultJadwal = [];
-        const defaultDamaged = [];
-        const defaultExpired = [];
-        const defaultOpname = [];
-
-        let currentAuthUser = JSON.parse(localStorage.getItem('innilo_auth')) || null;
-        let dataJadwal = JSON.parse(localStorage.getItem('innilo_data')) || defaultJadwal;
-        let dataDamaged = JSON.parse(localStorage.getItem('innilo_damaged')) || defaultDamaged;
-        let dataExpired = JSON.parse(localStorage.getItem('innilo_expired')) || defaultExpired;
-        let dataOpname = JSON.parse(localStorage.getItem('innilo_opname')) || defaultOpname;
-        let userAktif = localStorage.getItem('innilo_user') || 'Supervisor';
+        let dataJadwal = JSON.parse(localStorage.getItem('wpc_data')) || [];
+        let dataDamaged = JSON.parse(localStorage.getItem('wpc_damaged')) || [];
+        let dataExpired = JSON.parse(localStorage.getItem('wpc_expired')) || [];
+        let dataOpname = JSON.parse(localStorage.getItem('wpc_opname')) || [];
+        let currentAuthUser = JSON.parse(localStorage.getItem('wpc_auth')) || null;
+        let userAktif = localStorage.getItem('wpc_user') || 'Supervisor';
 
         let idAktif = null;
         let urlFotoSementara = '';
@@ -819,14 +840,56 @@
         let chartTopExpiredInstance = null;
 
         function simpanKeStorage() {
-            localStorage.setItem('innilo_data', JSON.stringify(dataJadwal));
-            localStorage.setItem('innilo_damaged', JSON.stringify(dataDamaged));
-            localStorage.setItem('innilo_expired', JSON.stringify(dataExpired));
-            localStorage.setItem('innilo_opname', JSON.stringify(dataOpname));
+            localStorage.setItem('wpc_data', JSON.stringify(dataJadwal));
+            localStorage.setItem('wpc_damaged', JSON.stringify(dataDamaged));
+            localStorage.setItem('wpc_expired', JSON.stringify(dataExpired));
+            localStorage.setItem('wpc_opname', JSON.stringify(dataOpname));
+
+            // Push Data Otomatis Ke Cloud Firebase
+            if (isOnlineFirebase && db) {
+                try {
+                    db.ref('wpc_database').set({
+                        jadwal: dataJadwal,
+                        damaged: dataDamaged,
+                        expired: dataExpired,
+                        opname: dataOpname,
+                        lastUpdate: Date.now()
+                    });
+                } catch(err) {
+                    console.error("Firebase sync error:", err);
+                }
+            }
+        }
+
+        function inisialisasiFirebaseListener() {
+            if (isOnlineFirebase && db) {
+                db.ref('wpc_database').on('value', (snapshot) => {
+                    const val = snapshot.val();
+                    if (val) {
+                        dataJadwal = val.jadwal || [];
+                        dataDamaged = val.damaged || [];
+                        dataExpired = val.expired || [];
+                        dataOpname = val.opname || [];
+
+                        localStorage.setItem('wpc_data', JSON.stringify(dataJadwal));
+                        localStorage.setItem('wpc_damaged', JSON.stringify(dataDamaged));
+                        localStorage.setItem('wpc_expired', JSON.stringify(dataExpired));
+                        localStorage.setItem('wpc_opname', JSON.stringify(dataOpname));
+
+                        renderTabel();
+                        renderDamaged();
+                        renderExpired();
+                        renderOpname();
+                        renderStatistik();
+                    }
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             inisialisasiAksesSesi();
+            inisialisasiFirebaseListener();
+
             const inputTgl = document.getElementById('opname-tanggal');
             if (inputTgl) inputTgl.value = new Date().toISOString().slice(0,10);
 
@@ -857,7 +920,7 @@
                 if (displayRole) displayRole.innerText = currentAuthUser.role === 'Supervisor' ? `👑 ${currentAuthUser.name}` : '👤 Staf Gudang';
                 
                 userAktif = currentAuthUser.role === 'Supervisor' ? 'Supervisor' : currentAuthUser.name;
-                localStorage.setItem('innilo_user', userAktif);
+                localStorage.setItem('wpc_user', userAktif);
             }
         }
 
@@ -868,7 +931,7 @@
 
             if (userDatabase[u] && userDatabase[u].password === p) {
                 currentAuthUser = userDatabase[u];
-                localStorage.setItem('innilo_auth', JSON.stringify(currentAuthUser));
+                localStorage.setItem('wpc_auth', JSON.stringify(currentAuthUser));
                 const errMsg = document.getElementById('login-error-msg');
                 if (errMsg) errMsg.classList.add('hidden');
                 
@@ -887,7 +950,7 @@
 
         function prosesLogout() {
             if (confirm('Apakah Anda yakin ingin keluar/logout?')) {
-                localStorage.removeItem('innilo_auth');
+                localStorage.removeItem('wpc_auth');
                 currentAuthUser = null;
                 const screen = document.getElementById('modal-login-screen');
                 if (screen) screen.classList.remove('hidden');
@@ -967,7 +1030,6 @@
             }
         }
 
-        // PERBAIKAN LEADERBOARD PERFORMA PETUGAS (PIC)
         function renderLeaderboardPIC() {
             const container = document.getElementById('container-pic');
             if (!container) return;
