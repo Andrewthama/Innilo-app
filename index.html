@@ -894,9 +894,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             inisialisasiAksesSesi();
             
-            // Tarik Data Cloud Server Pertama Kali & Set Auto-Refresh Setiap 5 Detik
             tarikDataCloudServer();
-            setInterval(tarikDataCloudServer, 5000);
+            setInterval(tarikDataCloudServer, 3000);
 
             const inputTgl = document.getElementById('opname-tanggal');
             if (inputTgl) inputTgl.value = new Date().toISOString().slice(0,10);
